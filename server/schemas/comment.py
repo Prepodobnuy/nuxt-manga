@@ -29,3 +29,5 @@ class CommentGetScheme(BaseModel):
     timestamp: int
 
     replies: int = Field(default=0)
+
+    carma: int

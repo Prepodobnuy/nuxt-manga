@@ -1,4 +1,5 @@
 from .needed import *
+from .rate import CommentCarma
 from schemas.comment import CommentPostScheme
 from schemas.comment import CommentGetScheme
 
@@ -42,9 +43,15 @@ class Comment(Base):
             deleted=self.deleted,
             pinned=self.pinned,
             timestamp=self.timestamp,
-            replies=len(get_replies(session, self.id))
+            replies=len(get_replies(session, self.id)),
+            carma=count_carma(session, self.id),
         )
 
 
 def get_replies(session: Session, id: int) -> list[Comment]:
     return session.query(Comment).filter(Comment.comment_id == id).all()
+
+def count_carma(session: Session, id: int) -> int:
+    positive = len(session.query(CommentCarma).filter(CommentCarma.comment_id == id).filter(CommentCarma.positive == True).all())
+    negative = len(session.query(CommentCarma).filter(CommentCarma.comment_id == id).filter(CommentCarma.positive == False).all())
+    return positive - negative

@@ -1,4 +1,5 @@
 from .needed import *
+from schemas.rate import CommentCarmaPostScheme
 
 
 class CommentCarma(Base):
@@ -8,4 +9,7 @@ class CommentCarma(Base):
     user_uuid = Column(String, ForeignKey('user.uuid'))
     positive = Column(Boolean)
 
-    
+    def __init__(self, scheme: CommentCarmaPostScheme, uuid: str):
+        self.comment_id = scheme.comment_id
+        self.user_uuid = uuid
+        self.positive = scheme.positive
