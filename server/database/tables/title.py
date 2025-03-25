@@ -1,3 +1,7 @@
+from io import BytesIO
+
+from PIL import Image
+
 from etc.funcs import validate_int
 from .needed import Base, timestamp, Session
 from .needed import Column, ForeignKey, Integer, String, Boolean
@@ -7,6 +11,11 @@ from schemas.title import TitleMetaGetScheme
 from etc.static import TITLE_PENDING_META_LIMIT
 from .person import Person, PersonMeta
 from .rate import TitleRate
+
+from etc.static import ASSETS_DIR
+from etc.static import UHD_COVER_GEOMETRY
+from etc.static import HD_COVER_GEOMETRY
+from etc.static import SD_COVER_GEOMETRY
 
 class Title(Base):
     __tablename__ = 'title'
@@ -205,6 +214,25 @@ class TitleMeta(Base):
             rates_10=len(get_rates(session, self.title_id, 10)),
             rated_value=get_rated(session, uuid),
         )
+        
+    def set_cover(self, bytes: BytesIO):
+        uhd_path = f'{ASSETS_DIR}/{self.title_id}-{self.id}uhd'
+        hd_path = f'{ASSETS_DIR}/{self.title_id}-{self.id}hd'
+        sd_path = f'{ASSETS_DIR}/{self.title_id}-{self.id}sd'
+
+        try:
+            with Image.open(bytes) as image:
+                image = image.resize(UHD_COVER_GEOMETRY, Image.Resampling.BILINEAR)
+                image.save(uhd_path)
+                image = image.resize(HD_COVER_GEOMETRY, Image.Resampling.BILINEAR)
+                image.save(hd_path)
+                image = image.resize(SD_COVER_GEOMETRY, Image.Resampling.BILINEAR)
+                image.save(sd_path)
+            
+            self.uhd_path = uhd_path
+            self.hd_path = hd_path
+            self.sd_path = sd_path
+        except Exception as e:...
 
 
 def get_rates(session: Session, title_id: int, rate_value: int) -> list[int]:
