@@ -23,7 +23,7 @@ def create_access_token(data: dict):
     return encoded_jwt
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     credentials_exception = HTTPException(
         status_code=401,
         detail="Could not validate credentials",
@@ -32,9 +32,38 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-        if username is None: raise credentials_exception
+
+        if username is None: 
+            raise credentials_exception
+
         user = User.get_by_username(get_session(), username)
-        if user is None: raise credentials_exception
+
+        if user is None: 
+            raise credentials_exception
+
         return user
     except JWTError:
         raise credentials_exception
+    
+
+def get_current_user_unsafe(token: str = Depends(oauth2_scheme)) -> User | None:
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+
+        if username is None: 
+            raise credentials_exception
+
+        user = User.get_by_username(get_session(), username)
+
+        if user is None: 
+            raise credentials_exception
+
+        return user
+    except JWTError:
+        return None
