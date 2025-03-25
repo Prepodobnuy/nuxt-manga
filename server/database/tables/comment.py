@@ -1,4 +1,5 @@
-from .needed import *
+from .needed import Base, Session, timestamp
+from .needed import Column, ForeignKey, Integer, String, Boolean
 from .rate import CommentCarma
 from schemas.comment import CommentPostScheme
 from schemas.comment import CommentGetScheme
@@ -32,7 +33,7 @@ class Comment(Base):
         self.timestamp = timestamp()
 
 
-    def get(self, session: Session) -> CommentGetScheme:
+    def get(self, session: Session, uuid: str | None) -> CommentGetScheme:
         CommentGetScheme(
             id=self.id,
             page_id=self.page_id,
@@ -45,6 +46,7 @@ class Comment(Base):
             timestamp=self.timestamp,
             replies=len(get_replies(session, self.id)),
             carma=count_carma(session, self.id),
+            rated=rated_by_user(session=session, uuid=uuid),
         )
 
 
@@ -52,6 +54,12 @@ def get_replies(session: Session, id: int) -> list[Comment]:
     return session.query(Comment).filter(Comment.comment_id == id).all()
 
 def count_carma(session: Session, id: int) -> int:
-    positive = len(session.query(CommentCarma).filter(CommentCarma.comment_id == id).filter(CommentCarma.positive == True).all())
-    negative = len(session.query(CommentCarma).filter(CommentCarma.comment_id == id).filter(CommentCarma.positive == False).all())
+    positive = len(session.query(CommentCarma).filter(CommentCarma.comment_id == id).filter(CommentCarma.positive is True).all())
+    negative = len(session.query(CommentCarma).filter(CommentCarma.comment_id == id).filter(CommentCarma.positive is False).all())
     return positive - negative
+
+def rated_by_user(session: Session, uuid: str | None):
+    if uuid is None: 
+        return False
+
+    return session.query(CommentCarma).filter(CommentCarma.user_uuid == uuid).first() is not None
