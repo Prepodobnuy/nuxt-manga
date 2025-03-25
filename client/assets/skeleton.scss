@@ -1,0 +1,24 @@
+.skeleton {
+  background: var(--color-background-4);
+  border-radius: 4px;
+  animation: pulse 2.5s infinite ease;
+  padding: 20px;
+}
+
+.skeletonHeader {
+  width: 100%;
+}
+
+.skeletonContent {
+}
+
+.skeleton-footer {
+  height: 50px;
+  width: 100%;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; background: var(--color-background-12); }
+  100% { opacity: 0.6; }
+}

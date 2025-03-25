@@ -1,0 +1,97 @@
+@use './transitions.scss';
+@use './variables/breakpoints.scss';
+
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+
+$desktop-width: 1250px;
+
+$header-height-desktop: 56px;
+$header-height-mobile: 50px;
+
+
+// desktop
+:root {
+  --header-height: #{$header-height-desktop};
+  --entry-height: 50px;
+  --thin-entry-height: 40px;
+  --entry-borrad: 6px;
+  --pseudo-header-height: 44px;
+  --header-content-width: 1100px;
+  --content-width: 1100px;
+  --tiny-content-width: 790px;
+  --mobile-content-width: 700px;
+  --content-borrad: 8px;
+  --content-padding: 5px;
+  --row-gap-0: 3px;
+  --row-gap-1: 5px;
+  --row-gap-2: 7px;
+  --row-gap-3: 9px;
+  --row-gap-4: 11px;
+  --row-gap-5: 13px;
+  --row-gap-6: 15px;
+  --input-height: 34px;
+  --input-padding: 6px 8px;
+  --input-borrad: 6px;
+  --input-fs: 87%;
+  --body-fs: 16px;
+} 
+
+.active-translate-y:active {
+  transform: translateY(2px);
+}
+.active-scale:active {
+  transform:scaleX(0.99);
+}
+
+.default-layout-placeholder {
+  margin-top: var(--header-height);
+}
+
+// mobile
+@media (max-width: calc(#{breakpoints.$mobile-break-point} - 1px)) {
+  :root {
+    --header-height: #{$header-height-mobile};
+    --entry-height: var(--header-height);
+    --input-height: 40px;
+    --body-fs: 14px;
+    --entry-borrad: 0px;
+  }
+  .hide-on-m {
+    display: none!important;
+  }
+  .default-layout-placeholder {
+    margin-top: 0;
+    margin-bottom: var(--header-height);
+  }
+}
+
+// desktop
+@media (min-width: #{breakpoints.$mobile-break-point}) {
+  .hide-on-d {
+    display: none!important;
+  }
+}
+
+body {
+  font-family: "Ubuntu", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.23;
+  font-size: var(--body-fs);
+  background-color: var(--body-bg);
+  color: var(--body-fg);
+
+  &.locked {
+    overflow: hidden;
+  }
+}
+
+
+a {
+  text-decoration: unset;
+  color: inherit;
+  &:visited {
+    color: inherit;
+  }
+}
+

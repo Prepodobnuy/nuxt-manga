@@ -1,0 +1,88 @@
+.entry {
+  --bg: var(--color-background-8);
+  --bg-active: var(--color-primary-background-0);
+  --height: var(--entry-height);
+  --gap: var(--row-gap-2);
+  --borrad: var(--entry-borrad);
+  --padding: var(--input-padding);
+  --flex-direction: var(row);
+
+  &.secondary {
+    --bg-active: var(--color-secondary-background-0);
+  }
+  &.semantic-n {
+    --bg: var(--color-semantic-n-background-0);
+    --bg-active: var(--color-background-8);
+  }
+  &.semantic-y {
+    --bg: var(--color-semantic-y-background-0);
+    --bg-active: var(--color-background-8);
+  }
+  &.semantic-m {
+    --bg: var(--color-semantic-m-background-0);
+    --bg-active: var(--color-background-8);
+  }
+  &.thin {
+    --height: var(--thin-entry-height);
+  }
+  &.reverse {
+    --flex-direction: row-reverse;
+  }
+  &.spaceBetween {
+    justify-content: space-between;
+  }
+
+  background-color: var(--bg);
+  transition: background-color 0.22s;
+
+  user-select: none;
+  position: relative;
+  display: flex;
+  flex-direction: var(--flex-direction);
+  flex-wrap: nowrap;
+  align-items: center;
+  overflow: hidden;
+  width: 100%;
+
+  height: var(--height);
+  gap: var(--gap);
+  border-radius: var(--borrad);
+  padding: var(--padding);
+
+  p {
+    font-size: 90%;
+  }
+}
+
+.entry.complex {
+  .bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background-image: var(--url);
+    background-repeat: no-repeat;
+    background-position: 50%;
+    background-size: cover;
+    filter: opacity(0.3) blur(5px);
+    z-index: 100;
+    transition: filter 0.3 1s;
+  }
+  .column {
+    z-index: 101;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .row {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: var(--gap);
+    }
+  }
+}
