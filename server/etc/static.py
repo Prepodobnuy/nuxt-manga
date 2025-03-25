@@ -1,9 +1,9 @@
 COMMENT_RANGE = (1, 200)
-USERNAME_RANGE = (4, 20)
-NICKNAME_RANGE = (4, 20)
-USER_STATUS_RANGE = (0, 20)
+USERNAME_RANGE = (4, 14)
+NICKNAME_RANGE = (4, 14)
+USER_STATUS_RANGE = (0, 30)
 USER_ABOUT_RANGE = (0, 300)
-PASSWORD_RANGE = (8, 30)
+PASSWORD_RANGE = (8, 60)
 
 UHD_PFP_GEOMETRY = (1920, 1920)
 UHD_COVER_GEOMETRY = (1920, 2688)
@@ -15,17 +15,13 @@ SD_COVER_GEOMETRY = (640, 896)
 TITLE_PENDING_META_LIMIT = 50
 PERSON_PENDING_META_LIMIT = 50
 
+# TODO fix hardcoded path
 ASSETS_DIR = '/home/prepodobnuy/.sdc/Documents/Projects/manga-proj/manga-server/assets'
 DEFAULT_PFP = '/home/prepodobnuy/.sdc/Documents/Projects/manga-proj/manga-server/default_pfp.jpg'
 DEFAULT_COVER = '/home/prepodobnuy/.sdc/Documents/Projects/manga-proj/manga-server/default_cover.jpg'
 DB_URL = 'sqlite:///testdb.db'
 
-def is_string_len_valid(string: str, range: tuple[int, int]) -> bool:
-    return range[0] < len(string) < range[1]
-
-def clamp(number: int | float, range: tuple[int | float, int | float]) -> int | float:
-    return max(range[0], min(range[1], number))
-
+# TODO move tags & genres into table
 tags = [
     {"id": 0  , "ru":"Азартные игры", "en":"Gambling"},
     {"id": 1  , "ru":"Алхимия", "en":"Alchemy"},

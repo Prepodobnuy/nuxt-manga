@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, fields
-from etc.constant_data import COMMENT_LENGTH_RANGE
+from etc.static import COMMENT_RANGE
 
 
 class CommentPostScheme(BaseModel):
@@ -7,7 +7,7 @@ class CommentPostScheme(BaseModel):
     title_id: int | None
     comment_id: int | None
 
-    caption: str = Field(..., ge=COMMENT_LENGTH_RANGE[0], le=COMMENT_LENGTH_RANGE[1])
+    caption: str = Field(..., ge=COMMENT_RANGE[0], le=COMMENT_RANGE[1])
 
 
 class CommentGetScheme(BaseModel):

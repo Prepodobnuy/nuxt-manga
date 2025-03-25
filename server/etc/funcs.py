@@ -15,3 +15,9 @@ def hash_string(s: str) -> str:
     hash = hashlib.sha256()
     hash.update(s.encode('utf-8'))
     return hash.hexdigest()
+
+def is_string_len_valid(string: str, range: tuple[int, int]) -> bool:
+    return range[0] < len(string) < range[1]
+
+def clamp(number: int | float, range: tuple[int | float, int | float]) -> int | float:
+    return max(range[0], min(range[1], number))
