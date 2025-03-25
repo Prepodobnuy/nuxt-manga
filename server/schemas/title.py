@@ -1,31 +1,67 @@
 from pydantic import BaseModel, Field, fields
 
 
-class TitleMetaScheme(BaseModel):
-    id: int | None
+class TitleMetaPostScheme(BaseModel):
     title_id: int | None
+    user_uuid: str
 
-    posted_user_uuid: str | None
+    ru_name: str
+    en_name: str
+    or_name: str
+    an_name: str
 
-    ru_name: str | None
-    en_name: str | None
-    or_name: str | None
-    an_name: str | None
+    tr_status: str = Field(title='Translate status', examples=['translating', 'translated', 'graveyard'])
+    rl_status: str = Field(title='Release status', examples=['ongoing', 'released', 'paused', 'graveyard'])
+    title_type: str = Field(title='Type of title', examples=['manga', 'manhua'])
 
-    tr_status: str | None = Field(title='Translate status', examples=['translating', 'translated', 'graveyard'])
-    rl_status: str | None = Field(title='Release status', examples=['ongoing', 'released', 'paused', 'graveyard'])
-    title_type: str | None = Field(title='Type of title', examples=['manga', 'manhua'])
+    age_rating: str = Field(title='Age rating', examples=['0+', '12+', '16+', '18+'])
+    release_year: int
 
-    age_rating: str | None = Field(title='Age rating', examples=['0+', '12+', '16+', '18+'])
-    release_year: int | None
+    tags: str
+    genres: str
 
-    tags: str | None
-    genres: str | None
+    author_id: int | None
+    artist_id: int | None
+    publisher_id: int | None
 
-    timestamp: int | None
+
+class TitleMetaGetScheme(BaseModel):
+    id: int
+    title_id: int
+    user_uuid: str
+
+    ru_name: str
+    en_name: str
+    or_name: str
+    an_name: str
+
+    tr_status: str = Field(title='Translate status', examples=['translating', 'translated', 'graveyard'])
+    rl_status: str = Field(title='Release status', examples=['ongoing', 'released', 'paused', 'graveyard'])
+    title_type: str = Field(title='Type of title', examples=['manga', 'manhua'])
+
+    age_rating: str = Field(title='Age rating', examples=['0+', '12+', '16+', '18+'])
+    release_year: int
+
+    tags: str
+    genres: str
+
+    timestamp: int
 
     author_id: int | None
     artist_id: int | None
     publisher_id: int | None
 
     public: bool = Field(default=False)
+
+    rates_1: int
+    rates_2: int
+    rates_3: int
+    rates_4: int
+    rates_5: int
+    rates_6: int
+    rates_7: int
+    rates_8: int
+    rates_9: int
+    rates_10: int
+
+    rated_value: int | None

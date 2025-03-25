@@ -1,8 +1,12 @@
-from .needed import *
-from schemas.title import TitleMetaScheme
-from .stuff import get_by_id
+from etc.funcs import validate_int
+from .needed import Base, timestamp, Session
+from .needed import Column, ForeignKey, Integer, String, Boolean
+from .needed import Mapped, relationship
+from schemas.title import TitleMetaPostScheme
+from schemas.title import TitleMetaGetScheme
 from etc.static import TITLE_PENDING_META_LIMIT
-
+from .person import Person, PersonMeta
+from .rate import TitleRate
 
 class Title(Base):
     __tablename__ = 'title'
@@ -27,7 +31,7 @@ class TitleMeta(Base):
     id = Column(Integer, primary_key=True)
     title_id = Column(Integer, ForeignKey('title.id'))
 
-    posted_user_uuid = Column(String, ForeignKey('user.uuid'))
+    user_uuid = Column(String, ForeignKey('user.uuid'))
 
     ru_name = Column(String, nullable=True)
     en_name = Column(String, nullable=True)
@@ -68,110 +72,151 @@ class TitleMeta(Base):
 
     title: Mapped['Title'] = relationship(back_populates='title_meta')
 
-    def __init__(self):
-        self.timestamp = timestamp()
+    def __init__(
+            self,
+            title_id: int,
+            user_uuid: str,
+            ru_name: str,
+            en_name: str,
+            or_name: str,
+            an_name: str,
+            tr_status: str,
+            rl_status: str,
+            title_type: str,
+            author_id: int | None,
+            artist_id: int | None,
+            publisher_id: int | None,
+            session: Session,
+        ):
 
-    def update(self, scheme: TitleMetaScheme):
-        self.posted_user_uuid = scheme.posted_user_uuid
-        self.ru_name = scheme.ru_name
-        self.en_name = scheme.en_name
-        self.or_name = scheme.or_name
-        self.an_name = scheme.an_name
+        self.title_id=title_id
+        self.user_uuid=user_uuid,
+        self.ru_name=ru_name
+        self.en_name=en_name
+        self.or_name=or_name
+        self.an_name=an_name
+        self.tr_status=tr_status
+        self.rl_status=rl_status
+        self.title_type=title_type
 
-        if scheme.tr_status in ['translating', 'translated', 'graveyard']:
-            self.tr_status = scheme.tr_status
-        if scheme.rl_status in ['ongoing', 'released', 'paused', 'graveyard']:
-            self.rl_status = scheme.rl_status
-        if scheme.title_type in ['manga', 'manhua']:
-            self.title_type = scheme.title_type
-        if scheme.age_rating in ['0+', '12+', '16+', '18+']:
-            self.age_rating = scheme.age_rating
+        if author_id is not None:
+            author = session.query(Person).filter(Person.id == author_id).first()
 
-        self.release_year = scheme.release_year
-        self.tags = scheme.tags
-        self.genres = scheme.genres
-        self.author_id = scheme.author_id
-        self.artist_id = scheme.artist_id
-        self.publisher_id = scheme.publisher_id
+            if author is None:
+                author_id = None
 
-        self.public = False
+            author_meta = session.query(PersonMeta).filter(PersonMeta.person_id == author_id).filter(PersonMeta.public).first()
+
+            if author_meta is None:
+                author_id = None
+
+        if artist_id is not None:
+            artist = session.query(Person).filter(Person.id == artist_id).first()
+
+            if artist is None:
+                artist_id = None
+
+            artist_meta = session.query(PersonMeta).filter(PersonMeta.person_id == artist_id).filter(PersonMeta.public).first()
+
+            if artist_meta is None:
+                artist_id = None
+
+        if publisher_id is not None:
+            publisher = session.query(Person).filter(Person.id == publisher_id).first()
+
+            if publisher is None:
+                publisher_id = None
+
+            publisher_meta = session.query(PersonMeta).filter(PersonMeta.person_id == publisher_id).filter(PersonMeta.public).first()
+
+            if publisher_meta is None:
+                publisher_id = None
+
+        self.author_id = author_id
+        self.artist_id = artist_id
+        self.publisher_id = publisher_id
+
 
     @classmethod
-    def post_new_meta_new_title(cls, scheme: TitleMetaScheme, uuid: str):
-        title = Title()
-        meta = TitleMeta()
-        meta.update(scheme, uuid)
-        meta.title_id = title.id
-
-        try:
-            session.add(title)
-            session.add(meta)
-            session.commit()
-            return meta
-        except Exception as e:
-            session.rollback()
-            print(e)
+    def new(cls, session: Session, scheme: TitleMetaPostScheme, uuid: str) -> "TitleMeta" | None:
+        if len(session.query(TitleMeta).filter(TitleMeta.public is False).all()) >= TITLE_PENDING_META_LIMIT:
             return None
+        
+        title = session.query(Title).filter(Title.id == scheme.id).first()
 
-    @classmethod
-    def post_new_meta_existing_title(cls, scheme: TitleMetaScheme, uuid: str):
-        if TitleMeta.privat_meta_count() >= TITLE_PENDING_META_LIMIT:
-            return None
-
-        title = get_by_id()
-
-        if title is None:
-            return None
-
-        meta = TitleMeta()
-        meta.update(scheme, uuid)
-        meta.title_id = title.id
-
-        try:
-            session.add(meta)
-            session.commit()
-            return meta
-        except Exception as e:
-            session.rollback()
-            print(e)
-            return None
-
-    @classmethod
-    def privat_meta_count(cls) -> int:
-        return cls.privat_meta.len()
-
-    @classmethod
-    def privat_meta(cls) -> list["TitleMeta"]:
-        return session.query(cls).filter(cls.public == False).all()
-
-    @classmethod
-    def delete_public_meta(cls) -> bool:
-        meta = session.query(cls).filter(cls.public == True).first()
-
-        if meta is not None:
+        if scheme.title_id is None or title is None:
+            title = Title()
             try:
-                session.delete(meta)
+                session.add(title)
                 session.commit()
-                return True
-            except Exception as e:
+            except Exception:
                 session.rollback()
-                print(e)
-                return False
-        return True
+                return None
 
-    def to_public(self) -> None:
-        if TitleMeta.delete_public_meta():
-            self.public = True
+        meta = TitleMeta(
+            title_id=title.id,
+            user_uuid=uuid,
+            ru_name=scheme.ru_name,
+            en_name=scheme.en_name,
+            or_name=scheme.or_name,
+            an_name=scheme.an_name,
+            tr_status=scheme.tr_status,
+            rl_status=scheme.rl_status,
+            title_type=scheme.title_type,
+            author_id=scheme.author_id,
+            artist_id=scheme.artist_id,
+            publisher_id=scheme.publisher_id,
+            session=session,
+        )
 
-    def to_privat(self) -> None:
-        self.public = False
+        return meta
+    
 
-    def delete(self) -> bool:
-        try:
-            session.delete(self)
-            session.commit()
-            return True
-        except Exception as e:
-            session.rollback()
-            print(e)
-            return False
+    def get(self, session: Session, uuid: str | None) -> TitleMetaGetScheme:
+        return TitleMetaGetScheme(
+            id=self.id,
+            title_id=self.title_id,
+            user_uuid=self.user_uuid,
+            ru_name=self.ru_name,
+            en_name=self.en_name,
+            or_name=self.or_name,
+            an_name=self.an_name,
+            tr_status=self.tr_status,
+            rl_status=self.rl_status,
+            title_type=self.title_type,
+            age_rating=self.age_rating,
+            release_year=self.release_year,
+            tags=self.tags,
+            genres=self.genres,
+            timestamp=self.timestamp,
+            author_id=self.author_id,
+            artist_id=self.artist_id,
+            publisher_id=self.publisher_id,
+            public=self.public,
+            rates_1=len(get_rates(session, self.title_id, 1)),
+            rates_2=len(get_rates(session, self.title_id, 2)),
+            rates_3=len(get_rates(session, self.title_id, 3)),
+            rates_4=len(get_rates(session, self.title_id, 4)),
+            rates_5=len(get_rates(session, self.title_id, 5)),
+            rates_6=len(get_rates(session, self.title_id, 6)),
+            rates_7=len(get_rates(session, self.title_id, 7)),
+            rates_8=len(get_rates(session, self.title_id, 8)),
+            rates_9=len(get_rates(session, self.title_id, 9)),
+            rates_10=len(get_rates(session, self.title_id, 10)),
+            rated_value=get_rated(session, uuid),
+        )
+
+
+def get_rates(session: Session, title_id: int, rate_value: int) -> list[int]:
+    return session.query(TitleRate).filter(TitleRate.title_id == title_id).filter(TitleRate.rate == rate_value).all()
+
+def get_rated(session: Session, uuid: str | None) -> int | None:
+    if uuid is None:
+        return None
+
+    rate = session.query(TitleRate).filter(TitleRate.user_uuid == uuid).first()
+
+    if rate is None:
+        return None
+
+    return validate_int(rate.rate, 1, 10)

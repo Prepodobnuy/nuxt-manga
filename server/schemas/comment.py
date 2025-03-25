@@ -26,3 +26,4 @@ class CommentGetScheme(BaseModel):
     replies: int = Field(default=0)
 
     carma: int
+    rated: bool
