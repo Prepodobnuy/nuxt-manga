@@ -11,6 +11,9 @@ def get_error_message(string:str, min_length:int=0, max_length:int=10) -> str:
 def validate_int(number: int, min_length: int, max_length: int) -> int:
     return max(min_length, min(max_length, number))
 
+def is_int_valud(number: int, min_length: int, max_length: int) -> bool:
+    return number > min_length and number < max_length
+
 def hash_string(s: str) -> str:
     hash = hashlib.sha256()
     hash.update(s.encode('utf-8'))
