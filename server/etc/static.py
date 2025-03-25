@@ -17,9 +17,9 @@ PERSON_PENDING_META_LIMIT = 50
 
 # TODO fix hardcoded path
 ASSETS_DIR = '/home/prepodobnuy/.sdc/Documents/Projects/manga-proj/manga-server/assets'
-DEFAULT_PFP = '/home/prepodobnuy/.sdc/Documents/Projects/manga-proj/manga-server/default_pfp.jpg'
-DEFAULT_COVER = '/home/prepodobnuy/.sdc/Documents/Projects/manga-proj/manga-server/default_cover.jpg'
-DB_URL = 'sqlite:///testdb.db'
+DEFAULT_PFP = '/home/prepodobnuy/.sdc/Documents/Projects/manga-proj/manga-server/assets/default_pfp.jpg'
+DEFAULT_COVER = '/home/prepodobnuy/.sdc/Documents/Projects/manga-proj/manga-server/assets/default_cover.jpg'
+DB_URL = 'sqlite:///db.sqlite'
 
 # TODO move tags & genres into table
 tags = [
