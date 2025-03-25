@@ -1,4 +1,5 @@
-from .needed import *
+from .needed import Base
+from .needed import Column, ForeignKey, Integer, String, Boolean
 from schemas.rate import CommentCarmaPostScheme
 from schemas.rate import TitleRatePostScheme
 
