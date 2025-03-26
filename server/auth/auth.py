@@ -13,7 +13,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 ACCESS_TOKEN_EXPIRE_WEEKS = 4
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
+oauth2_scheme_auto_error = OAuth2PasswordBearer(tokenUrl="token")
+
 
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -23,7 +25,7 @@ def create_access_token(data: dict):
     return encoded_jwt
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
+def get_current_user(token: str = Depends(oauth2_scheme_auto_error)) -> User:
     credentials_exception = HTTPException(
         status_code=401,
         detail="Could not validate credentials",
@@ -33,37 +35,31 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
 
-        if username is None: 
+        if username is None:
             raise credentials_exception
 
         user = User.get_by_username(get_session(), username)
 
-        if user is None: 
+        if user is None:
             raise credentials_exception
 
         return user
     except JWTError:
         raise credentials_exception
-    
+
 
 def get_current_user_unsafe(token: str = Depends(oauth2_scheme)) -> User | None:
-    credentials_exception = HTTPException(
-        status_code=401,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+    if not token:
+        return None
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
 
-        if username is None: 
-            raise credentials_exception
+        if username is None:
+            return None
 
-        user = User.get_by_username(get_session(), username)
+        return User.get_by_username(get_session(), username)
 
-        if user is None: 
-            raise credentials_exception
-
-        return user
     except JWTError:
         return None
