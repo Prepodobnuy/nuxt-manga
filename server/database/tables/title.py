@@ -17,6 +17,7 @@ from etc.static import UHD_COVER_GEOMETRY
 from etc.static import HD_COVER_GEOMETRY
 from etc.static import SD_COVER_GEOMETRY
 
+
 class Title(Base):
     __tablename__ = 'title'
     id = Column(Integer, primary_key=True)
@@ -82,61 +83,67 @@ class TitleMeta(Base):
     title: Mapped['Title'] = relationship(back_populates='title_meta')
 
     def __init__(
-            self,
-            title_id: int,
-            user_uuid: str,
-            ru_name: str,
-            en_name: str,
-            or_name: str,
-            an_name: str,
-            tr_status: str,
-            rl_status: str,
-            title_type: str,
-            author_id: int | None,
-            artist_id: int | None,
-            publisher_id: int | None,
-            session: Session,
-        ):
+        self,
+        title_id: int,
+        user_uuid: str,
+        ru_name: str,
+        en_name: str,
+        or_name: str,
+        an_name: str,
+        tr_status: str,
+        rl_status: str,
+        title_type: str,
+        author_id: int | None,
+        artist_id: int | None,
+        publisher_id: int | None,
+        session: Session,
+    ):
 
-        self.title_id=title_id
-        self.user_uuid=user_uuid,
-        self.ru_name=ru_name
-        self.en_name=en_name
-        self.or_name=or_name
-        self.an_name=an_name
-        self.tr_status=tr_status
-        self.rl_status=rl_status
-        self.title_type=title_type
+        self.title_id = title_id
+        self.user_uuid = user_uuid,
+        self.ru_name = ru_name
+        self.en_name = en_name
+        self.or_name = or_name
+        self.an_name = an_name
+        self.tr_status = tr_status
+        self.rl_status = rl_status
+        self.title_type = title_type
 
         if author_id is not None:
-            author = session.query(Person).filter(Person.id == author_id).first()
+            author = session.query(Person).filter(
+                Person.id == author_id).first()
 
             if author is None:
                 author_id = None
 
-            author_meta = session.query(PersonMeta).filter(PersonMeta.person_id == author_id).filter(PersonMeta.public).first()
+            author_meta = session.query(PersonMeta).filter(
+                PersonMeta.person_id == author_id).filter(PersonMeta.public).first()
 
             if author_meta is None:
                 author_id = None
 
         if artist_id is not None:
-            artist = session.query(Person).filter(Person.id == artist_id).first()
+            artist = session.query(Person).filter(
+                Person.id == artist_id).first()
 
             if artist is None:
                 artist_id = None
 
-            artist_meta = session.query(PersonMeta).filter(PersonMeta.person_id == artist_id).filter(PersonMeta.public).first()
+            artist_meta = session.query(PersonMeta).filter(
+                PersonMeta.person_id == artist_id).filter(PersonMeta.public).first()
 
             if artist_meta is None:
                 artist_id = None
 
         if publisher_id is not None:
-            publisher = session.query(Person).filter(Person.id == publisher_id).first()
+            publisher = session.query(Person).filter(
+                Person.id == publisher_id).first()
 
             if publisher is None:
                 publisher_id = None
 
-            publisher_meta = session.query(PersonMeta).filter(PersonMeta.person_id == publisher_id).filter(PersonMeta.public).first()
+            publisher_meta = session.query(PersonMeta).filter(
+                PersonMeta.person_id == publisher_id).filter(PersonMeta.public).first()
 
             if publisher_meta is None:
                 publisher_id = None
@@ -145,12 +152,11 @@ class TitleMeta(Base):
         self.artist_id = artist_id
         self.publisher_id = publisher_id
 
-
     @classmethod
-    def new(cls, session: Session, scheme: TitleMetaPostScheme, uuid: str) -> "TitleMeta" | None:
+    def new(cls, session: Session, scheme: TitleMetaPostScheme, uuid: str) -> "TitleMeta":
         if len(session.query(TitleMeta).filter(TitleMeta.public is False).all()) >= TITLE_PENDING_META_LIMIT:
             return None
-        
+
         title = session.query(Title).filter(Title.id == scheme.id).first()
 
         if scheme.title_id is None or title is None:
@@ -179,7 +185,6 @@ class TitleMeta(Base):
         )
 
         return meta
-    
 
     def get(self, session: Session, uuid: str | None) -> TitleMetaGetScheme:
         return TitleMetaGetScheme(
@@ -214,7 +219,7 @@ class TitleMeta(Base):
             rates_10=len(get_rates(session, self.title_id, 10)),
             rated_value=get_rated(session, uuid),
         )
-        
+
     def set_cover(self, bytes: BytesIO):
         uhd_path = f'{ASSETS_DIR}/{self.title_id}-{self.id}uhd'
         hd_path = f'{ASSETS_DIR}/{self.title_id}-{self.id}hd'
@@ -222,21 +227,26 @@ class TitleMeta(Base):
 
         try:
             with Image.open(bytes) as image:
-                image = image.resize(UHD_COVER_GEOMETRY, Image.Resampling.BILINEAR)
+                image = image.resize(UHD_COVER_GEOMETRY,
+                                     Image.Resampling.BILINEAR)
                 image.save(uhd_path)
-                image = image.resize(HD_COVER_GEOMETRY, Image.Resampling.BILINEAR)
+                image = image.resize(
+                    HD_COVER_GEOMETRY, Image.Resampling.BILINEAR)
                 image.save(hd_path)
-                image = image.resize(SD_COVER_GEOMETRY, Image.Resampling.BILINEAR)
+                image = image.resize(
+                    SD_COVER_GEOMETRY, Image.Resampling.BILINEAR)
                 image.save(sd_path)
-            
+
             self.uhd_path = uhd_path
             self.hd_path = hd_path
             self.sd_path = sd_path
-        except Exception as e:...
+        except Exception as e:
+            ...
 
 
 def get_rates(session: Session, title_id: int, rate_value: int) -> list[int]:
     return session.query(TitleRate).filter(TitleRate.title_id == title_id).filter(TitleRate.rate == rate_value).all()
+
 
 def get_rated(session: Session, uuid: str | None) -> int | None:
     if uuid is None:
