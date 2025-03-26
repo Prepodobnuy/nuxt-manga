@@ -15,7 +15,7 @@ router = APIRouter()
 async def get_title_meta(id: int, user: User = Depends(get_current_user_unsafe)) -> TitleMetaGetScheme:
     title_meta = session.query(TitleMeta).filter(TitleMeta.id == id).first()
 
-    if title_meta is None: 
+    if title_meta is None:
         raise HTTPException(404)
 
     if user is None:
@@ -23,10 +23,10 @@ async def get_title_meta(id: int, user: User = Depends(get_current_user_unsafe))
             return title_meta.get(session=session, uuid=None)
 
         raise HTTPException(403)
-    
+
     if title_meta.public:
         return title_meta.get(session=session, uuid=user.uuid)
-    
+
     if role_is_moder(user.role):
         return title_meta.get(session=session, uuid=user.uuid)
 
@@ -37,7 +37,7 @@ async def get_title_meta(id: int, user: User = Depends(get_current_user_unsafe))
 async def post_title(scheme: TitleMetaPostScheme, user: User = Depends(get_current_user)) -> int:
     if role_is_muted(user.role):
         raise HTTPException(403)
-    
+
     meta = TitleMeta.new(session=session, scheme=scheme, uuid=user.uuid)
 
     try:
@@ -48,21 +48,22 @@ async def post_title(scheme: TitleMetaPostScheme, user: User = Depends(get_curre
         print(e)
         session.rollback()
         raise HTTPException(500)
-    
+
 
 @router.post('/{title_meta_id}/cover')
 async def post_title_cover(title_meta_id: int, file: UploadFile = File(...), user: User = Depends(get_current_user)):
     if role_is_muted(user.role):
         raise HTTPException(403)
-    
-    title_meta = session.query(TitleMeta).filter(TitleMeta.id == title_meta_id).first()
+
+    title_meta = session.query(TitleMeta).filter(
+        TitleMeta.id == title_meta_id).first()
 
     if title_meta is None:
         raise HTTPException(404)
-    
-    if  title_meta.user_uuid != user.uuid and not role_is_moder(user.role):
+
+    if title_meta.user_uuid != user.uuid and not role_is_moder(user.role):
         raise HTTPException(403)
-    
+
     if not file.content_type.startswith("image/"):
         raise HTTPException(400, 'file is not an image')
 
@@ -79,7 +80,7 @@ async def update_title_meta(title_id: int, scheme: TitleMetaPostScheme, user: Us
 
     if title is None:
         raise HTTPException(404)
-    
+
     meta = TitleMeta.new(session=session, scheme=scheme, uuid=user.uuid)
 
     if meta is None:
@@ -93,22 +94,24 @@ async def update_title_meta(title_id: int, scheme: TitleMetaPostScheme, user: Us
         print(e)
         session.rollback()
         raise HTTPException(500)
-    
+
 
 @router.post('approve/{title_meta_id}')
 async def approve_title_meta(title_meta_id: int, user: User = Depends(get_current_user)):
     if not role_is_moder(user.role):
         raise HTTPException(403)
 
-    meta = session.query(TitleMeta).filter(TitleMeta.id == title_meta_id).first()
+    meta = session.query(TitleMeta).filter(
+        TitleMeta.id == title_meta_id).first()
 
     if meta is None:
         raise HTTPException(404)
-    
+
     if meta.public is True:
         raise HTTPException(400)
-    
-    current_approved_meta = session.query(TitleMeta).filter(TitleMeta.public is True).first()
+
+    current_approved_meta = session.query(
+        TitleMeta).filter(TitleMeta.public is True).first()
 
     if current_approved_meta is not None:
         try:
@@ -118,7 +121,7 @@ async def approve_title_meta(title_meta_id: int, user: User = Depends(get_curren
             print(e)
             session.rollback()
             raise HTTPException(500)
-        
+
     meta.public = True
     try:
         session.commit()
@@ -126,18 +129,63 @@ async def approve_title_meta(title_meta_id: int, user: User = Depends(get_curren
         print(e)
         session.rollback()
         raise HTTPException(500)
-    
+
 
 @router.post('disapprove/{title_id}')
 async def disapprove_title_meta(title_id: int, user: User = Depends(get_current_user)):
     if not role_is_moder(user.role):
         raise HTTPException(403)
-    
-    meta = session.query(TitleMeta).filter(TitleMeta.title_id == title_id).filter(TitleMeta.public is True).first()
+
+    meta = session.query(TitleMeta).filter(
+        TitleMeta.title_id == title_id).filter(TitleMeta.public is True).first()
 
     if meta is None:
         raise HTTPException(404)
-    
+
+    try:
+        session.delete(meta)
+        session.commit()
+    except Exception as e:
+        print(e)
+        session.rollback()
+        raise HTTPException(500)
+
+
+@router.delete('/{title_id}')
+async def delete_title(title_id: int, user: User = Depends(get_current_user)):
+    if not role_is_moder(user.role):
+        raise HTTPException(403)
+
+    title = session.query(Title).filter(Title.id == title_id).first()
+
+    if title is None:
+        raise HTTPException(404)
+
+    meta = session.query(TitleMeta).filter(
+        TitleMeta.title_id == title.id).all()
+
+    try:
+        for m in meta:
+            session.delete(m)
+        session.delete(title)
+        session.commit()
+    except Exception as e:
+        print(e)
+        session.rollback()
+        raise HTTPException(500)
+
+
+@router.delete('/{title_meta_id}')
+async def delete_title_meta(title_meta_id: int, user: User = Depends(get_current_user)):
+    if not role_is_moder(user.role):
+        raise HTTPException(403)
+
+    meta = session.query(TitleMeta).filter(
+        TitleMeta.id == title_meta_id).first()
+
+    if meta is None:
+        raise HTTPException(404)
+
     try:
         session.delete(meta)
         session.commit()
