@@ -9,10 +9,10 @@ from etc.static import tags, genres
 
 app = FastAPI()
 
-app.include_router(auth_router, prefix='/auth', tags=['auth'])
-app.include_router(user_router, prefix='/user', tags=['user'])
-app.include_router(title_router, prefix='/title', tags=['title'])
-app.include_router(person_router, prefix='/person', tags=['person'])
+app.include_router(auth_router, prefix='/auth', tags=['Auth'])
+app.include_router(user_router, prefix='/user', tags=['User'])
+app.include_router(title_router, prefix='/title', tags=['Title'])
+app.include_router(person_router, prefix='/person', tags=['Person'])
 
 
 @app.get('/tags')
