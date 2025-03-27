@@ -1,6 +1,8 @@
 from io import BytesIO
+import os
 
 from etc.static import DEFAULT_PFP
+from etc.role import role_is_admin
 from .needed import APIRouter, FileResponse, HTTPException, UploadFile, Depends, File
 from .needed import get_current_user, session
 from schemas.user import UserPublicScheme
@@ -13,58 +15,66 @@ router = APIRouter()
 async def get_user_public_data(uuid: str) -> UserPublicScheme | None:
     user: User = User.get_by_uuid(session, uuid)
 
-    if user is None: 
+    if user is None:
         raise HTTPException(404)
 
     return user.public_scheme()
 
 
-@router.get('/{uuid}/pfp/uhd')
+@router.get('/{uuid}/pfp')
 async def get_user_pfp(uuid: str) -> FileResponse:
     user: User = User.get_by_uuid(session, uuid)
 
-    if user is None: 
+    if user is None:
         raise HTTPException(404)
 
-    if user.uhd_path is None: 
+    if user.uhd_path is None:
         return FileResponse(DEFAULT_PFP)
 
     return FileResponse(user.uhd_path)
 
 
-@router.get('/{uuid}/pfp/hd')
-async def get_user_pfp(uuid: str) -> FileResponse:
-    user: User = User.get_by_uuid(session, uuid)
-
-    if user is None: 
-        raise HTTPException(404)
-
-    if user.hd_path is None: 
-        return FileResponse(DEFAULT_PFP)
-
-    return FileResponse(user.hd_path)
-
-
-@router.get('/{uuid}/pfp/sd')
-async def get_user_pfp(uuid: str) -> FileResponse:
-    user: User = User.get_by_uuid(session, uuid)
-
-    if user is None: 
-        raise HTTPException(404)
-
-    if user.sd_path is None: 
-        return FileResponse(DEFAULT_PFP)
-
-    return FileResponse(user.sd_path)
-
-
 @router.post('/pfp')
 async def post_pfp(file: UploadFile = File(...), user: User = Depends(get_current_user)):
-    if user is None: 
-        raise HTTPException(403)
-        
     if not file.content_type.startswith("image/"):
         raise HTTPException(400, 'file is not an image')
-    
+
     contents = await file.read()
     user.set_pfp(BytesIO(contents))
+
+
+@router.delete('')
+async def delete_user(user: User = Depends(get_current_user)):
+    try:
+        os.remove(user.uhd_path)
+        os.remove(user.hd_path)
+        os.remove(user.sd_path)
+    except Exception as e:
+        print(e)
+
+    try:
+        session.delete(user)
+        session.commit()
+    except Exception as e:
+        print(e)
+        session.rollback()
+        raise HTTPException(500)
+
+
+@router.delete('/{uuid}')
+async def delete_user(uuid: str, user: User = Depends(get_current_user)):
+    if not role_is_admin(user.role):
+        raise HTTPException(403)
+
+    vilain = User.get_by_uuid(session, uuid)
+
+    if vilain is None:
+        raise HTTPException(404)
+
+    try:
+        session.delete(vilain)
+        session.commit()
+    except Exception as e:
+        print(e)
+        session.rollback()
+        raise HTTPException(500)
