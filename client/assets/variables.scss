@@ -1,0 +1,21 @@
+$sizes: (
+  xs: var(--xs),
+  sm: var(--sm),
+  md: var(--md),
+  lg: var(--lg),
+  xl: var(--xl),
+);
+
+$roundness: (
+  standart: calc(var(--br) * var(--scale)),
+  pill: 9999px,
+  none: 0,
+);
+
+$colors: (
+  neutral: "neutral",
+  primary: "primary",
+  success: "success",
+  warning: "warning",
+  error: "error",
+);

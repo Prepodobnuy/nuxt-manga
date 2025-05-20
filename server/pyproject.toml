@@ -1,0 +1,22 @@
+[project]
+name = "manga-api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.15.2",
+    "asyncpg>=0.30.0",
+    "fastapi>=0.115.12",
+    "pillow>=11.2.1",
+    "psycopg2>=2.9.10",
+    "pydantic>=2.11.3",
+    "python-dotenv>=1.1.0",
+    "python-jose>=3.4.0",
+    "setuptools>=79.0.0",
+    "sqlalchemy>=2.0.40",
+    "sqlalchemy-seeder>=0.3.0",
+    "sqlalchemy-utils>=0.41.2",
+    "strawberry-graphql[debug-server]>=0.266.0",
+    "uvicorn>=0.34.2",
+]

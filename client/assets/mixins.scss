@@ -1,0 +1,139 @@
+@use "sass:map";
+@use "./variables.scss";
+
+@mixin button-reset {
+  border: unset;
+  outline: unset;
+  background: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+@mixin input-reset {
+  border: unset;
+  outline: unset;
+  background: none;
+  box-sizing: border-box;
+}
+
+@mixin textarea-reset {
+  border: none;
+  overflow: auto;
+  outline: none;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  resize: none;
+}
+
+@mixin flex-center {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-start {
+  display: inline-flex;
+  align-items: center;
+  justify-content: start;
+}
+
+@mixin flex-end {
+  display: inline-flex;
+  align-items: center;
+  justify-content: end;
+}
+
+@mixin page-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--content-width);
+  align-self: center;
+}
+
+@mixin form-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 800px;
+  align-self: center;
+}
+
+@mixin generate-sizes($sizes-map) {
+  @each $size, $value in $sizes-map {
+    &.size-#{$size} {
+      --scale: #{$value};
+    }
+  }
+}
+
+@mixin generate-roundness($roundness-map) {
+  @each $type, $value in $roundness-map {
+    &.roundness-#{$type} {
+      border-radius: $value;
+    }
+  }
+}
+
+@mixin generate-colors($colors-map) {
+  @each $color, $value in $colors-map {
+    &.color-#{$color} {
+      --bg: var(--#{$color}-bg);
+      --fg: var(--#{$color}-fg);
+      --bg-active: var(--#{$color}-bg-active);
+      --fg-active: var(--#{$color}-fg-active);
+    }
+  }
+}
+
+@mixin generate-variant($type, $settings, $focus: false) {
+  &.variant-#{$type} {
+    background-color: map.get($settings, "bg");
+    color: map.get($settings, "color");
+
+    @if map.has-key($settings, "border") {
+      box-shadow: inset 0 0 0 1px map.get($settings, "border");
+    }
+    @if map.has-key($settings, "bold") {
+      font-weight: 700;
+    }
+
+    &:hover {
+      @if map.has-key($settings, "hover") {
+        background-color: map.get($settings, "hover");
+      }
+    }
+
+    &.active,
+    &:active {
+      @if map.has-key($settings, "active") {
+        background-color: map.get($settings, "active");
+      } @else {
+        background-color: color-mix(
+          in srgb,
+          var(--reverse-color) 30%,
+          map.get($settings, "bg") 20%
+        );
+      }
+
+      @if map.has-key($settings, "active-color") {
+        color: map.get($settings, "active-color");
+      }
+    }
+
+    @if map.has-key($settings, "focus") {
+      &:focus-within {
+        @if map.has-key($settings, "focus") {
+          background-color: map.get($settings, "focus");
+        } @else {
+          background-color: color-mix(
+            in srgb,
+            var(--reverse-color) 30%,
+            map.get($settings, "bg") 20%
+          );
+        }
+      }
+    }
+  }
+}

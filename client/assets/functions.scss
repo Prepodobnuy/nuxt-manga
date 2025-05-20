@@ -1,0 +1,3 @@
+@function transparent-mix($color, $opacity: 60%, $amount: 30%) {
+  @return color-mix(in srgb, transparent $opacity, $color $amount);
+}
