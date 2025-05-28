@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { UiEntryButton, UiNumberInput } from "#components";
+
 const viewStore = useViewStore();
-const { form, includeTags, excludeTags, includeGenres, excludeGenres } =
+const { form, includeTags, excludeTags, includeGenres, excludeGenres, clear } =
   useCatalogStore();
 
 const tagPrompt = ref("");
@@ -35,6 +37,20 @@ const activeSection = ref(0);
           {{ form.genres.length }}
         </p>
       </UiEntryButton>
+
+      <p style="margin: var(--gap); font-size: 0.95em">Год Релиза</p>
+      <p style="margin: var(--gap); font-size: 0.85em">От</p>
+      <UiNumberInput v-model="form.release_year_min" />
+      <p style="margin: var(--gap); font-size: 0.85em">До</p>
+      <UiNumberInput v-model="form.release_year_max" />
+
+      <p style="margin: var(--gap); font-size: 0.95em">Оценка</p>
+      <p style="margin: var(--gap); font-size: 0.85em">От</p>
+      <UiNumberInput v-model="form.rate_min" />
+      <p style="margin: var(--gap); font-size: 0.85em">До</p>
+      <UiNumberInput v-model="form.rate_max" />
+
+      <UiEntryButton label="Сбросить" @click="clear()" />
     </section>
 
     <secion v-if="activeSection === 1">

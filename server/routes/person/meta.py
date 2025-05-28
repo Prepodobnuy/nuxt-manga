@@ -15,14 +15,11 @@ router = APIRouter()
 
 
 @router.get("/{id}")
-async def get_person_meta(id: int, user: User = Depends(get_user)) -> PersonMetaScheme:
+async def get_person_meta(id: int) -> PersonMetaScheme:
     meta = await PersonMetaService.get_by_id(id=id)
 
     if meta is None:
         raise HTTPException(404)
-
-    if user.role == Role.moderator.value or user.role == Role.admin.value:
-        return PersonMetaService(meta=meta).to_scheme()
 
     if meta.approved:
         return PersonMetaService(meta=meta).to_scheme()
@@ -51,7 +48,7 @@ async def put_person_meta(
     if person is None:
         raise HTTPException(404)
 
-    await PersonMetaService.create_from_scheme(
+    PersonMetaService.create_from_scheme(
         user=user,
         person=person,
         scheme=scheme,

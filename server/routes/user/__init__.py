@@ -6,7 +6,7 @@ from .admin import router as admin_router
 
 router = APIRouter()
 
-router.include_router(router=user_router, prefix="/user", tags=["User"])
-router.include_router(router=puts_router, prefix="/user", tags=["User"])
+router.include_router(router=user_router, prefix="", tags=["User"])
+router.include_router(router=puts_router, prefix="", tags=["User"])
 router.include_router(router=moder_router, prefix="/moder", tags=["Mod"])
 router.include_router(router=admin_router, prefix="/admin", tags=["Admin"])

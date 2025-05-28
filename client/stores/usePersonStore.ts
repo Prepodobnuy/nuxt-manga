@@ -36,7 +36,7 @@ export const usePersonStore = defineStore("person", () => {
     }
   };
 
-  const fetchMeta = async (id: number) => {
+  const fetchMeta = async (id: number): Promise<PersonMeta> => {
     state.loading = true;
     try {
       const { data } = await useFetch<PersonMeta>(`/api/person/meta/${id}`, {

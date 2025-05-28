@@ -39,13 +39,6 @@ class UserAssetService:
     ):
         assert session is not None
 
-        with Image.open(data) as content:
-            content = content.resize(USER_PFP_RESOLUTION)
-            byte_arr = BytesIO()
-            content.save(byte_arr, format="PNG")
-
-        data = byte_arr.getvalue()
-
         query = select(UserPfp).where(UserPfp.uuid == self.user.uuid)
         exec = await session.execute(query)
         pfp = exec.scalar_one_or_none()
@@ -80,13 +73,6 @@ class UserAssetService:
         session: AsyncSession | None = None,
     ):
         assert session is not None
-
-        with Image.open(data) as content:
-            content = content.resize(USER_BACK_RESOLUTION)
-            byte_arr = BytesIO()
-            content.save(byte_arr, format="PNG")
-
-        data = byte_arr.getvalue()
 
         query = select(UserBack).where(UserBack.uuid == self.user.uuid)
         exec = await session.execute(query)

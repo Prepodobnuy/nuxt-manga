@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { useTranslateTeamForm } from "~/forms/useTranslateTeamForm";
 
-const { form, valid, clear } = useTranslateTeamForm();
+const { form, valid, clear, post } = useTranslateTeamForm();
+
+const handlePost = async () => {
+  console.clear();
+  console.log(1);
+  await post();
+};
 </script>
 
 <template>
@@ -38,7 +44,7 @@ const { form, valid, clear } = useTranslateTeamForm();
       <div class="row">
         <div style="width: 200%" />
         <UiButton label="Очистить" variant="outline" @click="clear()" />
-        <UiButton label="Отправить" color="success" />
+        <UiButton label="Отправить" color="success" @click="handlePost()" />
       </div>
     </div>
   </LayoutPseudoHeader>

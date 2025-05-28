@@ -2,9 +2,13 @@ import io
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from db.session_fabric import get_session
 from models.user.user import User
 from modules.auth import get_user
+from schemas.person import PersonScheme
 from schemas.user import UserScheme
 from services.user import UserService
 from services.user.asset import UserAssetService
@@ -13,9 +17,33 @@ from services.user.asset import UserAssetService
 router = APIRouter()
 
 
+@router.get("/search/{prompt}")
+async def quick_search(
+    prompt: str,
+    session: AsyncSession = Depends(get_session),
+) -> list[UserScheme]:
+    async with session:
+        query = (
+            select(User)
+            .where(
+                User.username.ilike(f"%{prompt}%")
+                | User.nickname.ilike(f"%{prompt}%")
+                | User.email.ilike(f"%{prompt}%")
+            )
+            .limit(10)
+        )
+
+        exec = await session.execute(query)
+
+        res = []
+        for m in exec.scalars().all():
+            res.append((await UserService(user=m).to_scheme()))
+
+        return res
+
+
 @router.get("/self")
 async def get_user_self(user: User = Depends(get_user)) -> UserScheme:
-    print("get user")
     return await UserService(user=user).to_scheme()
 
 

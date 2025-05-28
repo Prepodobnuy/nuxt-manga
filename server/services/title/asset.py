@@ -90,8 +90,8 @@ class TitleAssetService:
 
         query = select(TitleCover).where(TitleCover.title_id == self.title.id)
         exec = await session.execute(query)
-        cover = exec.scalar_one_or_none()
-        if cover is None:
+        cover = exec.scalars().all()
+        if len(cover) == 0:
             return None
 
-        return cover.data
+        return cover[0].data

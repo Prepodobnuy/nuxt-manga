@@ -188,6 +188,8 @@ watch(isHovered, (hovered) => {
     border: none;
     cursor: pointer;
     transition: background 0.3s ease;
+    box-shadow: 0 0 1px 1px
+      color-mix(in srgb, transparent 100%, var(--neutral-bg) 100%);
 
     &.active {
       background: var(--reverse-color);

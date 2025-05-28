@@ -15,7 +15,11 @@ from .title import (
 )
 from .person import Person, PersonMeta
 from .comment import Comment, CommentCarma
-from .translate import TranslateTeam, TranslateTeamMember, TranslateTeamTitleOwnership
+from .translate import (
+    TranslateTeam,
+    TranslateTeamMember,
+    TranslateTeamTitleOwnership,
+)
 from .tags import Tag, Genre
 from .page import Page, PageAsset
 from .notification import Notification, NotificationGlobal, NotificationGlobalView

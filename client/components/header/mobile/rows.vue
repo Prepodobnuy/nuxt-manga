@@ -28,9 +28,9 @@ const handleProfileClick = () => {
     roundness="none"
     column
     label="Каталог"
-    @click="navigateTo('/catalog')"
+    @click="navigateTo('/')"
   />
-  <UiButton
+  <!--<UiButton
     color="primary"
     leading="heroicons:home-16-solid"
     variant="ghost"
@@ -38,7 +38,7 @@ const handleProfileClick = () => {
     column
     label="Главная"
     @click="navigateTo('/')"
-  />
+  />-->
   <UiButton
     color="primary"
     leading="heroicons:user-16-solid"

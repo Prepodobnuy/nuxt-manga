@@ -1,24 +1,22 @@
 <script setup lang="ts">
-import { UiFallbackImg, UiTabs } from "#components";
+import { UiButton, UiFallbackImg, UiTabs } from "#components";
 import { useUserStore } from "~/stores/useUserStore";
 
+const { user: userval, logged } = useAuth();
 const config = useRuntimeConfig();
 const route = useRoute();
-const userStore = useUserStore();
 const uuid = route.params.uuid as string;
+const { data: user } = useUserStore(uuid);
 
-await userStore.fetchUser(uuid);
-const user = computed(() => userStore.state.users[uuid]);
+const pfp = `${config.public.apiBase}/api/asset/user/${uuid}/pfp`;
+const back = `${config.public.apiBase}/api/asset/user/${uuid}/back`;
 
-const pfp = `${config.public.apiBase}/api/asset/user/${user.value.uuid}/pfp`;
-const back = `${config.public.apiBase}/api/asset/user/${user.value.uuid}/back`;
+const tabs = [{ label: "Описание" }];
 
-const tabs = [
-  { label: "Описание" },
-  { label: "Списки" },
-  { label: "Оценки" },
-  { label: "Комментарии" },
-];
+const calert = () => {
+  console.clear();
+  console.log(user);
+};
 </script>
 
 <template>
@@ -29,44 +27,38 @@ const tabs = [
 
     <div class="content">
       <header>
-        <UiFallbackImg class="back" :src="back" />
+        <UiFallbackImg class="back" :src="back" @click="calert()" />
 
         <div class="header__content">
-          <UiFallbackImg class="pfp" :src="pfp" />
+          <div class="row">
+            <UiFallbackImg class="pfp" :src="pfp" />
+            <UiButton
+              v-if="userval?.uuid === uuid"
+              class="settings"
+              variant="outline"
+              color="primary"
+              roundness="pill"
+              leading="heroicons:adjustments-horizontal-16-solid"
+              icon
+              @click="navigateTo(`/user/${userval.uuid}/options`)"
+            />
 
-          <div class="inner">
-            <div class="col">
-              <div class="username">
-                <p>{{ user?.nickname }}</p>
-                <p v-if="user.username !== user.nickname" class="user">
-                  {{ user?.username }}
-                </p>
-              </div>
-              <div class="status">
-                {{ user.status }}
+            <div class="inner">
+              <div class="col">
+                <div class="username">
+                  <p>{{ user?.nickname }}</p>
+                  <p v-if="user?.username !== user?.nickname" class="user">
+                    {{ user?.username }}
+                  </p>
+                </div>
+                <div class="status">{{ user?.status }}</div>
               </div>
             </div>
           </div>
-        </div>
 
-        <UiTabs class="tabs" :tabs="tabs" full-width />
+          <div class="description" v-if="user?.about">{{ user.about }}</div>
+        </div>
       </header>
-      <div><UiTextarea /></div>
-      <div><UiTextarea /></div>
-      <div><UiTextarea /></div>
-      <div><UiTextarea /></div>
-      <div><UiTextarea /></div>
-      <div><UiTextarea /></div>
-      <div><UiTextarea /></div>
-      <div><UiTextarea /></div>
-      <div><UiTextarea /></div>
-      <div><UiTextarea /></div>
-      <div><UiTextarea /></div>
-      <div><UiTextarea /></div>
-      <div><UiTextarea /></div>
-      <div><UiTextarea /></div>
-      <div><UiTextarea /></div>
-      <div><UiTextarea /></div>
     </div>
   </LayoutPseudoHeader>
 </template>
@@ -101,24 +93,43 @@ header {
 
   .back {
     width: 100%;
-    aspect-ratio: 2000/300;
+    aspect-ratio: 2000/600;
     flex-shrink: 0;
     border-radius: var(--brr) var(--brr) 0 0;
   }
 
   .tabs {
     overflow: hidden;
-    border-radius: 0 0 var(--brr) var(--brr);
   }
 
   .header__content {
     background-color: var(--neutral-bg);
-    position: relative;
     display: inline-flex;
+    flex-direction: column;
     justify-content: start;
     align-items: center;
     display: inline-flex;
-    height: calc(calc(var(--hg) * var(--xl)) * 2);
+    border-radius: 0 0 var(--brr) var(--brr);
+
+    .description {
+      width: 100%;
+      padding: 0 var(--pd) var(--pd) var(--pd);
+    }
+
+    .row {
+      width: 100%;
+      position: relative;
+      display: inline-flex;
+      justify-content: start;
+      align-items: center;
+      height: calc(calc(var(--hg) * var(--xl)) * 2);
+    }
+
+    .settings {
+      position: absolute;
+      bottom: var(--pd);
+      right: var(--pd);
+    }
 
     .pfp {
       position: absolute;

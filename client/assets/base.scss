@@ -90,23 +90,27 @@ video {
   display: block;
 }
 
+html {
+  font-size: var(--root-fs, 14px);
+}
+
 h1 {
-  font-size: 1.6em;
+  font-size: 1.6em !important;
 }
 h2 {
-  font-size: 1.5em;
+  font-size: 1.5em !important;
 }
 h3 {
-  font-size: 1.4em;
+  font-size: 1.4em !important;
 }
 h4 {
-  font-size: 1.3em;
+  font-size: 1.3em !important;
 }
 h5 {
-  font-size: 1.2em;
+  font-size: 1.2em !important;
 }
 h6 {
-  font-size: 1.1em;
+  font-size: 1.1em !important;
 }
 
 $breakLaptop: 1279px;

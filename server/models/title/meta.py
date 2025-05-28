@@ -20,6 +20,7 @@ class TitleMeta(Base):
     title_ru: Mapped[str]
     title_en: Mapped[str]
     title_jp: Mapped[str]
+    release_year: Mapped[int | None]
     title_an: Mapped[str | None] = mapped_column(default=None)
     description: Mapped[str | None] = mapped_column(default=None)
     author_id: Mapped[int | None] = mapped_column(ForeignKey("person.id"), default=None)

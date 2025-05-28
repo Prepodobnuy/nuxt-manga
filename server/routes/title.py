@@ -1,7 +1,7 @@
 import json
 from typing import Literal
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,6 +9,8 @@ from db.session_fabric import get_session
 from models.title.list import TitleList
 from models.title.meta import TitleMeta
 from models.title.rate import TitleRate
+from models.title.title import Title
+from models.title.view import TitleView
 from models.user.user import User
 from modules.auth import get_moder, get_user
 from schemas.title import (
@@ -26,11 +28,39 @@ from services.title.title import TitleService
 router = APIRouter()
 
 
+@router.get("/search/{prompt}")
+async def quick_search(
+    prompt: str,
+    session: AsyncSession = Depends(get_session),
+) -> list[TitleMetaScheme]:
+    async with session:
+        query = (
+            select(TitleMeta)
+            .where(
+                TitleMeta.approved == True,
+                TitleMeta.title_ru.ilike(f"%{prompt}%")
+                | TitleMeta.title_en.ilike(f"%{prompt}%")
+                | TitleMeta.title_jp.ilike(f"%{prompt}%")
+                | TitleMeta.title_an.ilike(f"%{prompt}%"),
+            )
+            .limit(10)
+        )
+
+        exec = await session.execute(query)
+
+        res = []
+        for m in exec.scalars().all():
+            res.append(TitleMetaService(m).to_scheme())
+
+        return res
+
+
 @router.get("/{id}/meta")
 async def get_title_meta(
     id: int,
     session: AsyncSession = Depends(get_session),
 ) -> TitleMetaScheme:
+    print("\n\n\n\n\n", id, "\n\n\n\n\n")
     exec = await session.execute(
         select(TitleMeta).where(
             TitleMeta.title_id == id,
@@ -221,28 +251,76 @@ async def post_title(
         raise HTTPException(500)
 
 
+class ratePostScheme(BaseModel):
+    rate: int
+
+
 @router.post("/{id}/rate")
 async def rate_title(
     id: int,
-    rate: int | None,
+    rate: ratePostScheme,
     session: AsyncSession = Depends(get_session),
     user: User = Depends(get_user),
 ):
-    exec = await session.execute(select(TitleRate).where(TitleRate.user_uuid == user.uuid))
+    query = select(TitleRate).where(
+        TitleRate.title_id == id,
+        TitleRate.user_uuid == user.uuid,
+    )
 
-    trate = exec.scalar_one_or_none()
+    async with session:
+        try:
+            trate = (await session.execute(query)).scalar_one_or_none()
 
-    if rate is None:
-        if trate is not None:
-            await session.delete(rate)
-        await session.commit()
-        return
+            if trate is None:
+                trate = TitleRate(title_id=id, user_uuid=user.uuid, rating=rate.rate)
+                session.add(trate)
+            else:
+                if trate.rating == rate.rate:
+                    await session.delete(trate)
+                else:
+                    trate.rating = rate.rate
 
-    rate = min(max(1, rate), 5)
+            await session.commit()
 
-    if trate is None:
-        trate = TitleRate(title_id=id, user_uuid=user.uuid, rating=rate)
-    else:
-        trate.rating = rate
+        except HTTPException as e:
+            await session.rollback()
+            raise e
 
-    await session.commit()
+        except Exception as e:
+            print(e)
+            await session.rollback()
+            raise HTTPException(500)
+
+
+@router.post("/{id}/view")
+async def view_title(
+    id: int,
+    session: AsyncSession = Depends(get_session),
+    user: User = Depends(get_user),
+):
+    query = select(Title).where(Title.id == id)
+    view_query = select(TitleView).where(
+        TitleView.title_id == id,
+        TitleView.user_uuid == user.uuid,
+    )
+
+    async with session:
+        try:
+            title = (await session.execute(query)).scalar_one_or_none()
+            if title is None:
+                raise HTTPException(404)
+            view = (await session.execute(view_query)).scalar_one_or_none()
+
+            if view is None:
+                view = TitleView(id, user.uuid)
+                session.add(view)
+                await session.commit()
+
+        except HTTPException as e:
+            await session.rollback()
+            raise e
+
+        except Exception as e:
+            print(e)
+            await session.rollback()
+            raise HTTPException(500)

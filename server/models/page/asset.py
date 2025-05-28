@@ -14,5 +14,4 @@ class PageAsset(Base):
         init=False,
     )
     page_id: Mapped[int] = mapped_column(ForeignKey("page.id"))
-    translate_team_id: Mapped[int] = mapped_column(ForeignKey("translate_team.id"))
-    asset_path: Mapped[str]
+    content: Mapped[bytes]

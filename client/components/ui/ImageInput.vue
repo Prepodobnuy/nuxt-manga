@@ -7,12 +7,16 @@ const {
   width = 200,
   color = "neutral",
   variant = "solid",
+  preview = null,
 } = defineProps<{
-  aspect?: number;
+  aspect?: number | null;
   width?: number;
   color?: "neutral" | "primary" | "success" | "warning" | "error";
   variant?: "solid" | "outline" | "soft" | "softborder" | "ghost" | "link";
+  preview?: string | null;
 }>();
+
+const emit = defineEmits(["select"]);
 
 const model = defineModel<File | undefined>();
 
@@ -37,6 +41,9 @@ onMounted(() => {
   if (model.value) {
     editValue.value = URL.createObjectURL(model.value);
     edit.value = true;
+  }
+  if (preview) {
+    previewUrl.value = preview;
   }
 });
 
@@ -69,28 +76,40 @@ const stopEdit = () => {
 const crop = () => {
   if (!cropper.value) return;
 
-  cropper.value.getCroppedCanvas().toBlob((blob) => {
-    if (!blob) return;
+  cropper.value.getCroppedCanvas({ imageSmoothingEnabled: false }).toBlob(
+    (blob) => {
+      if (!blob) return;
 
-    const croppedFile = new File([blob], "image.png", {
-      type: "image/png",
-      lastModified: Date.now(),
-    });
+      const croppedFile = new File([blob], "image.png", {
+        type: "image/png",
+        lastModified: Date.now(),
+      });
 
-    model.value = croppedFile;
-    stopEdit();
-  }, "image/png");
+      model.value = croppedFile;
+      emit("select", croppedFile);
+      stopEdit();
+    },
+    "image/png",
+    1,
+  );
 };
 
 watch([image, edit], ([img, isEdit]) => {
   if (isEdit && img) {
-    cropper.value = new Cropper(img, {
-      aspectRatio: aspect,
-      viewMode: 1,
-      autoCropArea: 1,
-      responsive: true,
-      guides: true,
-    });
+    cropper.value = aspect
+      ? new Cropper(img, {
+          aspectRatio: aspect,
+          viewMode: 1,
+          autoCropArea: 1,
+          responsive: true,
+          guides: true,
+        })
+      : new Cropper(img, {
+          viewMode: 1,
+          autoCropArea: 1,
+          responsive: true,
+          guides: true,
+        });
   }
 });
 

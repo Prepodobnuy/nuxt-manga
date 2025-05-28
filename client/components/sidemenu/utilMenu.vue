@@ -2,6 +2,7 @@
 const viewStore = useViewStore();
 
 const emit = defineEmits(["close", "login", "sign"]);
+const { user, logged } = useAuth();
 
 const viewProfileMenu = ref(false);
 const viewAuthMenu = ref(false);
@@ -16,6 +17,11 @@ const toggleAuthMenu = () => {
 const toggleColorMenu = () => {
   viewColorMenu.value = !viewColorMenu.value;
 };
+
+const logout = () => {
+  const { logout: l } = useAuth();
+  l();
+};
 </script>
 
 <template>
@@ -25,9 +31,11 @@ const toggleColorMenu = () => {
     :reverse="true"
     close-left
   >
-    <UiEntryButton label="Главная" leading="heroicons:home-16-solid" />
-
-    <UiEntryButton label="Каталог" leading="heroicons:bars-3-16-solid" />
+    <UiEntryButton
+      label="Каталог"
+      leading="heroicons:bars-3-16-solid"
+      @click="navigateTo('/')"
+    />
 
     <UiEntryButton
       label="Профиль"
@@ -37,27 +45,34 @@ const toggleColorMenu = () => {
     />
     <div v-if="viewProfileMenu">
       <UiEntryButton
+        v-if="logged && user"
         label="Главная"
         leading="heroicons:building-storefront-solid"
+        @click="navigateTo(`/user/${user.uuid}`)"
       />
-      <UiEntryButton label="Списки" leading="heroicons:bookmark-solid" />
-      <UiEntryButton label="Настройки" leading="heroicons:cog-8-tooth-solid" />
       <UiEntryButton
+        v-if="logged && user"
+        label="Настройки"
+        leading="heroicons:cog-8-tooth-solid"
+        @click="navigateTo(`/user/${user.uuid}/options`)"
+      />
+      <UiEntryButton
+        v-if="logged && user"
         color="error"
         label="Выход"
         leading="heroicons:power-16-solid"
+        @click="logout()"
       />
-    </div>
-
-    <UiEntryButton
-      label="Аунтефикация"
-      leading="heroicons:user-solid"
-      :toggle="viewAuthMenu"
-      @click="toggleAuthMenu"
-    />
-    <div v-if="viewAuthMenu">
-      <UiEntryButton label="Регистрация" @click="navigateTo('/auth/signup')" />
-      <UiEntryButton label="Вход" @click="navigateTo('/auth/login')" />
+      <UiEntryButton
+        v-if="!logged"
+        label="Регистрация"
+        @click="navigateTo('/auth/signup')"
+      />
+      <UiEntryButton
+        v-if="!logged"
+        label="Вход"
+        @click="navigateTo('/auth/login')"
+      />
     </div>
 
     <UiEntryButton

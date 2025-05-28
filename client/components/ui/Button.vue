@@ -193,7 +193,7 @@ button {
   @include mixins.generate-variant(
     "soft",
     (
-      "bg": functions.transparent-mix(var(--bg), 10%, 75%),
+      "bg": functions.transparent-mix(var(--bg), 10%, 65%),
       "color": var(--fg),
       "hover": functions.transparent-mix(var(--bg-active), 100%, 30%),
       "active": functions.transparent-mix(var(--bg-active), 100%, 60%),
@@ -202,7 +202,7 @@ button {
   @include mixins.generate-variant(
     "softborder",
     (
-      "bg": functions.transparent-mix(var(--bg), 10%, 75%),
+      "bg": functions.transparent-mix(var(--bg), 10%, 65%),
       "color": var(--fg),
       "border": var(--bg),
       "hover": functions.transparent-mix(var(--bg-active), 100%, 5%),

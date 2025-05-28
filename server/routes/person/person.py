@@ -21,6 +21,7 @@ router = APIRouter()
 @router.get("/search/{prompt}")
 async def quick_search(prompt: str) -> list[PersonScheme]:
     results = await PersonService.quick_search(prompt=prompt)
+    print(results)
     return [await PersonService(person=p).to_scheme(include_unaproved_meta=False) for p in results]
 
 

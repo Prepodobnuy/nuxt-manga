@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { PopupSearchMenu } from "#components";
+
 const viewStore = useViewStore();
 
 const startX = ref();
@@ -56,6 +58,7 @@ const handleSwipe = () => {
 <template>
   <SidemenuSearch :view="viewStore.viewSearch && viewStore.mobile" />
   <SidemenuUtilMenu :view="viewStore.viewUtilMenu && viewStore.mobile" />
+  <PopupSearchMenu />
   <SidemenuCatalogMenu />
 
   <PopupLogin v-if="viewStore.viewLogin" />

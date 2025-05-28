@@ -26,6 +26,7 @@ class TitleMetaScheme(BaseModel):
     approved: bool
     approved_at: datetime | None
     approved_user_uuid: str | None
+    release_year: int | None
 
     created_user_uuid: str
     created_at: datetime

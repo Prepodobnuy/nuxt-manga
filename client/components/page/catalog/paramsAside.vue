@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { form, includeTags, excludeTags, includeGenres, excludeGenres } =
+const { form, includeTags, excludeTags, includeGenres, excludeGenres, clear } =
   useCatalogStore();
 
 const tagPrompt = ref("");
@@ -45,8 +45,8 @@ const activeSection = ref(0);
       <p style="margin: var(--gap); font-size: 0.95em">Год Релиза</p>
       <UiRange
         style="margin: 0 var(--gap)"
-        v-model:minm="form.releaseYearFrom"
-        v-model:maxm="form.releaseYearTo"
+        v-model:minm="form.release_year_min"
+        v-model:maxm="form.release_year_max"
         :min="1900"
         :max="2025"
         size="sm"
@@ -56,18 +56,21 @@ const activeSection = ref(0);
       <p>
         <UiRange
           style="margin: 0 var(--gap)"
-          v-model:minm="form.minRate"
-          v-model:maxm="form.maxRate"
+          v-model:minm="form.rate_min"
+          v-model:maxm="form.rate_max"
           :min="1"
           :max="5"
           size="sm"
         />
       </p>
 
-      <div style="height: 16px" />
-
-      <UiButton label="Очистить" variant="ghost" roundness="none" start />
-      <UiButton label="Поиск" roundness="none" start />
+      <UiButton
+        label="Очистить"
+        variant="ghost"
+        roundness="none"
+        start
+        @click="clear()"
+      />
     </section>
 
     <section v-if="activeSection === 1">

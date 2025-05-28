@@ -29,6 +29,7 @@ class TitleMetaService:
         title_en: str,
         title_jp: str,
         title_an: str | None,
+        release_year: int | None,
         description: str | None,
         author_id: int,
         artist_id: int,
@@ -43,6 +44,7 @@ class TitleMetaService:
             title_en=title_en,
             title_jp=title_jp,
             title_an=title_an,
+            release_year=release_year,
             description=description,
             author_id=author_id,
             artist_id=artist_id,
@@ -53,6 +55,11 @@ class TitleMetaService:
 
     @staticmethod
     def create_from_scheme(title: Title, user: User, scheme: TitleMetaPostScheme) -> TitleMeta:
+        try:
+            release_year = int(scheme.release_year)
+        except Exception:
+            release_year = None
+
         return TitleMetaService.create(
             title=title,
             user=user,
@@ -60,6 +67,7 @@ class TitleMetaService:
             title_en=scheme.title_en,
             title_jp=scheme.title_jp,
             title_an=scheme.title_an,
+            release_year=release_year,
             description=scheme.description,
             author_id=scheme.author_id,
             artist_id=scheme.artist_id,
@@ -69,6 +77,20 @@ class TitleMetaService:
         )
 
     def to_scheme(self) -> TitleMetaScheme:
+        tags = []
+        genres = []
+
+        for t in self.meta.tags.split("/") if self.meta.tags is not None else []:
+            try:
+                tags.append(int(t))
+            except Exception:
+                continue
+
+        for g in self.meta.genres.split("/") if self.meta.genres is not None else []:
+            try:
+                genres.append(int(g))
+            except Exception:
+                continue
         return TitleMetaScheme(
             id=self.meta.id,
             title_id=self.meta.title_id,
@@ -76,19 +98,18 @@ class TitleMetaService:
             title_en=self.meta.title_en,
             title_jp=self.meta.title_jp,
             title_an=self.meta.title_an,
+            release_year=self.meta.release_year,
             description=self.meta.description,
             author_id=self.meta.author_id,
             artist_id=self.meta.artist_id,
             publisher_id=self.meta.publisher_id,
-            tags=[int(t) for t in self.meta.tags.split("/")] if self.meta.tags is not None else [],
-            genres=[int(t) for t in self.meta.genres.split("/")]
-            if self.meta.genres is not None
-            else [],
+            tags=tags,
+            genres=genres,
             approved=self.meta.approved,
             approved_at=self.meta.approved_at,
             approved_user_uuid=self.meta.approved_user_uuid,
             created_user_uuid=self.meta.created_user_uuid,
-            created_at=self.meta.created_at,
+            created_at=datetime.now(timezone.utc),
         )
 
     @staticmethod

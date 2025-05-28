@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const viewStore = useViewStore();
 const store = useSearchStore();
+const { titles, users, persons } = storeToRefs(useSearchStore());
 </script>
 
 <template>
@@ -10,6 +11,7 @@ const store = useSearchStore();
     close-right
   >
     <UiEntryInput
+      v-model="store.prompt"
       placeholder="Поиск"
       leading="heroicons:magnifying-glass-16-solid"
     />
@@ -29,6 +31,27 @@ const store = useSearchStore();
         :leading="entity.leading"
         :toggle="index === store.selected"
         @click="store.select(index)"
+      />
+    </div>
+
+    <div class="entries">
+      <EntityTitleEntry
+        v-if="store.selected === 0"
+        v-for="title in titles"
+        :title="title"
+        @click="navigateTo(`/title/${title.title_id}`)"
+      />
+      <EntityUserEntry
+        v-if="store.selected === 1"
+        v-for="user in users"
+        :user="user"
+        @click="navigateTo(`/user/${user.uuid}`)"
+      />
+      <EntityPersonEntry
+        v-if="store.selected === 2"
+        v-for="person in persons"
+        :person="person.meta"
+        @click="navigateTo(`/peson/${person.id}`)"
       />
     </div>
   </SidemenuDefault>

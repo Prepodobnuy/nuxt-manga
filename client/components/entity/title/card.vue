@@ -7,24 +7,18 @@ const { title } = defineProps<{
 }>();
 
 const config = useRuntimeConfig();
-// const cover = `${config.public.apiBase}/api/asset/title/${title?.title_id}/cover/0`;
-const cover = `https://i.imgur.com/2qpMLjk.jpg`;
+const cover = `${config.public.apiBase}/api/asset/title/${title?.title_id}/cover`;
 </script>
 
 <template>
   <div v-if="title" class="card-wrapper">
     <UiFallbackImg class="bg" :src="cover" />
-    <div class="top-line">
-      <div class="rating">
-        <Icon name="heroicons:star-16-solid" />
-        9
-      </div>
-    </div>
+    <div class="top-line"></div>
     <div class="content">
       <UiFallbackImg class="pfp" :src="cover" />
       <div class="titles">
         <h6>{{ title.title_ru }}</h6>
-        <h6>{{ title.title_en }}</h6>
+        <h6 class="another-title">{{ title.title_en }}</h6>
       </div>
     </div>
   </div>
@@ -58,6 +52,10 @@ const cover = `https://i.imgur.com/2qpMLjk.jpg`;
   position: absolute;
   top: calc(var(--pd) - 2px);
   left: calc(var(--pd) - 2px);
+}
+
+.another-title {
+  font-size: 0.9em;
 }
 
 .rating {

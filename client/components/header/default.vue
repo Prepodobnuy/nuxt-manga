@@ -7,19 +7,19 @@ const { user, logged, fetchUser } = useAuth();
   <div class="placeholder" :class="{ mobile: viewStore.mobile }">
     <header class="desktop">
       <div>
-        <UiButton
+        <!--<UiButton
           color="primary"
           leading="heroicons:home-16-solid"
           variant="ghost"
           label="Главная"
           @click="navigateTo('/')"
-        />
+        />-->
         <UiButton
           color="primary"
           leading="heroicons:bars-3-16-solid"
           variant="ghost"
           label="Каталог"
-          @click="navigateTo('/catalog')"
+          @click="navigateTo('/')"
         />
         <UiButton
           color="primary"

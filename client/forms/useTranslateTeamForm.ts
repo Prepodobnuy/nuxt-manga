@@ -1,4 +1,9 @@
+import type { TranslateTeamPostScheme } from "~/types/translate";
+
 export const useTranslateTeamForm = defineStore("translateForm", () => {
+  const config = useRuntimeConfig();
+  const { token, logged } = useAuth();
+
   const form = reactive<{
     title?: string;
     description?: string;
@@ -27,14 +32,53 @@ export const useTranslateTeamForm = defineStore("translateForm", () => {
     };
   };
 
+  const loading = ref(false);
+
   const validate = () => {
     valid.value.title =
       typeof form.title !== "undefined" &&
       form.title.length > 1 &&
       form.title.length < 100;
+    valid.value.cover = typeof form.cover !== "undefined";
   };
 
-  const post = () => {};
+  const post = async () => {
+    console.log(2);
+    if (!logged.value) return;
+    if (loading.value) return;
+
+    validate();
+    if (typeof form.title === "undefined" || typeof form.cover === "undefined")
+      return;
+
+    loading.value = true;
+    try {
+      const formData = new FormData();
+
+      const data: TranslateTeamPostScheme = {
+        title: form.title,
+        description: form.description || null,
+      };
+
+      formData.append("file", form.cover);
+      formData.append("scheme", JSON.stringify(data));
+
+      const response = await fetch(`${config.public.apiBase}/api/translate`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      clear();
+    } catch (err) {
+    } finally {
+      loading.value = false;
+    }
+  };
 
   return {
     form,

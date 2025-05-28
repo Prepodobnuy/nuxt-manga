@@ -15,5 +15,5 @@ class TitleView(Base):
         nullable=False,
         init=False,
     )
+    title_id: Mapped[int] = mapped_column(ForeignKey("title.id"))
     user_uuid: Mapped[str] = mapped_column(ForeignKey("user.uuid"))
-    date: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))

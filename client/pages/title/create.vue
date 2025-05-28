@@ -221,7 +221,7 @@ const unselectPublisher = (id: number) => {
         :active="!valid.releaseYear"
         @click="valid.releaseYear = true"
       >
-        <h6>Дата выхода</h6>
+        <h6>Год релиза</h6>
         <UiInput v-model="form.releaseYear" variant="outline" />
       </UiFormBlock>
 

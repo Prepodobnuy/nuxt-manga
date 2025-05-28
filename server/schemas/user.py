@@ -14,4 +14,5 @@ class UserScheme(BaseModel):
     moder: bool
     admin: bool
     translator: bool
+    owns_translate_team: bool
     created_at: datetime

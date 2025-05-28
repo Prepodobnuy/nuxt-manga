@@ -1,43 +1,8 @@
 <script setup lang="ts">
-import {
-  LazyPersonCard,
-  PersonCard,
-  UiButton,
-  UiHBox,
-  UiLink,
-  UiTabs,
-} from "#components";
-import { usePersonStore } from "#imports";
+import { useModPanelStore } from "~/stores/useModPanelStore";
 
-const route = useRoute();
-const router = useRouter();
-const personStore = usePersonStore();
-
-interface Tab {
-  leading?: string;
-  trailing?: string;
-  label?: string;
-  icon?: boolean;
-}
-
-const tabs = [{ label: "Тайтлы" }, { label: "Персоны" }, { label: "Жалобы" }];
-const tab = defineModel<number>({ default: 0 });
-
-watch(tab, (newTab) => {
-  router.push({
-    query: {
-      ...route.query,
-      tab: newTab,
-    },
-  });
-});
-
-onMounted(async () => {
-  if (route.query.tab) {
-    tab.value = Number(route.query.tab);
-  }
-  personStore.fetchPendingPersons();
-});
+const { approve, decline } = useModPanelStore();
+const { pending_translate } = storeToRefs(useModPanelStore());
 </script>
 
 <template>
@@ -47,26 +12,25 @@ onMounted(async () => {
     </template>
 
     <div class="content">
-      <div style="border-radius: var(--br); overflow: hidden">
-        <UiTabs v-model="tab" :tabs="tabs" full-width />
+      <h5>Новые команды переводчиков</h5>
+      <div class="mod-row" v-for="t in pending_translate" :key="t.id">
+        <EntityTranslatorEntry :translate="t" />
+        <UiButton
+          leading="heroicons:trash-16-solid"
+          :fw="false"
+          label="Удалить"
+          variant="outline"
+          color="error"
+          @click="decline(t.id)"
+        />
+        <UiButton
+          label="Утвердить"
+          variant="outline"
+          :fw="false"
+          color="success"
+          @click="approve(t.id)"
+        />
       </div>
-
-      <section v-if="tab === 0" class="section">
-        <h4>asdfasd</h4>
-      </section>
-
-      <section v-if="tab === 1" class="section">
-        <UiHBox label="Обновления метаданных">
-          <PersonCard
-            :key="person.id"
-            :person="person"
-            mod
-            v-for="person in personStore.state.pendingPersons"
-          />
-        </UiHBox>
-      </section>
-
-      <section v-if="tab === 2" class="section"></section>
     </div>
   </LayoutPseudoHeader>
 </template>
@@ -90,9 +54,9 @@ onMounted(async () => {
   }
 }
 
-.testbox {
-  height: 300px;
-  width: 200px;
-  background-color: red;
+.mod-row {
+  display: inline-flex;
+  gap: var(--gap);
+  align-items: center;
 }
 </style>

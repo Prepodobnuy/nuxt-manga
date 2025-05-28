@@ -8,7 +8,7 @@ useInitHue();
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @import url("https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
 
 .app-wrapper {
@@ -88,6 +88,10 @@ useInitHue();
     font-weight: 400;
     font-style: normal;
   }
+}
+
+:root {
+  --root-fs: var(--fs, 14px);
 }
 
 .light-mode .app-wrapper {

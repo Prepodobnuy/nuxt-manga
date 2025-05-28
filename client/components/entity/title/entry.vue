@@ -33,6 +33,8 @@ const cover = `${config.public.apiBase}/api/asset/title/${title?.title_id}/cover
     position: absolute;
     width: 100%;
     height: 100%;
+    left: 0;
+    top: 0;
     filter: blur(10px) opacity(0.25);
   }
 }

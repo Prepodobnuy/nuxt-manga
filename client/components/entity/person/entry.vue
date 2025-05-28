@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { UiFallbackImg } from "#components";
-import type { PersonFull } from "~/types/person";
+import type { Person } from "~/types/person";
 
 const { person } = defineProps<{
-  person?: PersonFull;
+  person: Person;
 }>();
 
 const config = useRuntimeConfig();
@@ -16,8 +16,8 @@ const cover = `${config.public.apiBase}/api/asset/person/${person?.id}/cover`;
     <div class="content">
       <UiFallbackImg class="pfp" :src="cover" />
       <div class="titles">
-        <h6>{{ person.meta.name_ru }}</h6>
-        <h6>{{ person.meta.name_en }}</h6>
+        <h6>{{ person.name_ru }}</h6>
+        <h6>{{ person.name_en }}</h6>
       </div>
     </div>
   </UiEntryRaw>

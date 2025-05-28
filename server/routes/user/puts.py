@@ -2,7 +2,9 @@ import io
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from db.session_fabric import get_session
 from models.user.user import User
 from modules.auth import get_user
 from schemas.user import UserScheme
@@ -13,7 +15,7 @@ from services.user.asset import UserAssetService
 router = APIRouter()
 
 
-@router.put("/pfp")
+@router.post("/pfp")
 async def put_user_pfp(
     file: UploadFile = File(...),
     user: User = Depends(get_user),
@@ -29,7 +31,7 @@ async def put_user_pfp(
     await ser.set_pfp(data=content)
 
 
-@router.put("/back")
+@router.post("/back")
 async def put_user_back(
     file: UploadFile = File(...),
     user: User = Depends(get_user),
@@ -91,27 +93,42 @@ async def put_user_email(
 async def put_user_nickname(
     nickname: str,
     user: User = Depends(get_user),
+    session: AsyncSession = Depends(get_session),
 ):
-    ser = UserService(user)
-
-    await ser.set_nickname(nickname=nickname)
+    try:
+        user.nickname = nickname
+        session.add(user)
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise HTTPException(500)
 
 
 @router.put("/status")
 async def put_user_status(
     status: str,
     user: User = Depends(get_user),
+    session: AsyncSession = Depends(get_session),
 ):
-    ser = UserService(user)
-
-    await ser.set_status(status=status)
+    try:
+        user.status = status
+        session.add(user)
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise HTTPException(500)
 
 
 @router.put("/about")
 async def put_user_about(
     about: str,
     user: User = Depends(get_user),
+    session: AsyncSession = Depends(get_session),
 ):
-    ser = UserService(user)
-
-    await ser.set_about(about=about)
+    try:
+        user.about = about
+        session.add(user)
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise HTTPException(500)

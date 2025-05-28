@@ -4,6 +4,7 @@ export const useAuth = () => {
   const { timeOutMessage } = usePopupStore();
   const config = useRuntimeConfig();
   const user = useState<User | null>("user", () => null);
+  const isFetching = ref(false);
 
   const token = useCookie<string | null>("token", {
     default: () => null,
@@ -18,25 +19,20 @@ export const useAuth = () => {
       formData.append("username", credentials.username);
       formData.append("password", credentials.password);
 
-      const { data, error } = await useFetch<{
-        access_token: string;
-        token_type: string;
-      }>("/api/auth/login", {
-        baseURL: config.public.apiBase,
-        method: "POST",
-        body: formData,
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+      const { access_token } = await $fetch<{ access_token: string }>(
+        "/api/auth/login",
+        {
+          baseURL: config.public.apiBase,
+          method: "POST",
+          body: formData,
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
         },
-      });
+      );
 
-      if (error.value) throw error.value;
-
-      if (data.value) {
-        token.value = data.value.access_token;
-      }
+      token.value = access_token;
       await fetchUser();
-
       return navigateTo("/");
     } catch (err) {
       timeOutMessage("Ошибка при входе", 1000);
@@ -50,7 +46,7 @@ export const useAuth = () => {
     password: string;
   }) => {
     try {
-      const { error } = await useFetch("/api/auth/signup", {
+      await $fetch("/api/auth/signup", {
         baseURL: config.public.apiBase,
         method: "POST",
         body: credentials,
@@ -58,8 +54,6 @@ export const useAuth = () => {
           "Content-Type": "application/json",
         },
       });
-
-      if (error.value) throw error.value;
 
       return await login({
         username: credentials.username,
@@ -74,37 +68,50 @@ export const useAuth = () => {
 
   const fetchUser = async () => {
     if (!token.value) return;
+    if (isFetching.value) return;
 
+    isFetching.value = true;
     try {
-      const { data } = await useFetch<User>("/api/user/self", {
+      user.value = await $fetch<User>("/api/user/self", {
         baseURL: config.public.apiBase,
         headers: {
           Authorization: `Bearer ${token.value}`,
         },
       });
-
-      user.value = data.value;
     } catch (err) {
-      timeOutMessage("Ошибка при получении информации о пользователе", 1000);
-      logout();
+      console.error("Failed to fetch user:", err);
+      token.value = null;
+      user.value = null;
+      timeOutMessage("Сессия истекла", 1000);
+      navigateTo("/auth/login");
+    } finally {
+      isFetching.value = false;
     }
   };
 
   const logout = () => {
     token.value = null;
     user.value = null;
-    return navigateTo("/auth/login");
+    navigateTo("/auth/login");
   };
 
-  const logged = computed(() => token.value !== null);
+  const logged = computed(() => !!token.value && !!user.value);
 
-  if (process.client && token.value && !user.value) {
-    fetchUser().catch(console.error); // или useAsyncData
-  }
+  onMounted(async () => {
+    if (process.client && token.value && !user.value) {
+      await fetchUser();
+    }
+  });
+
+  watch(token, async (newToken) => {
+    if (newToken && !user.value) {
+      await fetchUser();
+    }
+  });
 
   return {
-    user,
-    token,
+    user: readonly(user),
+    token: readonly(token),
     login,
     signup,
     logout,

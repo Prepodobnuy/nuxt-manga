@@ -237,10 +237,21 @@ class UserService:
         admin = self.user.role == Role.admin.value
         moder = self.user.role == Role.moderator.value
 
-        exec = await session.execute(select(TranslateTeamMember).where(TranslateTeamMember.uuid==self.user.uuid))
-        sexec = await session.execute(select(TranslateTeam).where(TranslateTeam.owner_uuid==self.user.uuid))
+        member = (
+            await session.execute(
+                select(TranslateTeamMember).where(TranslateTeamMember.uuid == self.user.uuid)
+            )
+        ).scalar_one_or_none() is not None
+        owner = (
+            await session.execute(
+                select(TranslateTeam).where(
+                    TranslateTeam.approved == True,
+                    TranslateTeam.owner_uuid == self.user.uuid,
+                )
+            )
+        ).scalar_one_or_none() is not None
 
-        translator = exec.first() is not None or sexec.first() is not None
+        translator = member or owner
 
         return UserScheme(
             uuid=self.user.uuid,
@@ -255,6 +266,7 @@ class UserService:
             admin=admin,
             moder=moder,
             translator=translator,
+            owns_translate_team=owner,
         )
 
     @connection
@@ -302,7 +314,8 @@ class UserService:
         assert session is not None
         await UserService.validate_nickname(nickname=nickname)
 
-        self.user.nickname = nickname
+        user = self.user
+        user.nickname = nickname
         await session.commit()
 
     @connection
@@ -313,7 +326,8 @@ class UserService:
     ):
         assert session is not None
 
-        self.user.status = status
+        user = self.user
+        user.status = status
         await session.commit()
 
     @connection
@@ -324,7 +338,8 @@ class UserService:
     ):
         assert session is not None
 
-        self.user.about = about
+        user = self.user
+        user.about = about
         await session.commit()
 
     @staticmethod

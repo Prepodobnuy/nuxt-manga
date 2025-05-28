@@ -3,7 +3,7 @@ import { UiFallbackImg } from "#components";
 import type { User } from "~/types/user";
 
 const { user } = defineProps<{
-  user?: User;
+  user: User;
 }>();
 
 const config = useRuntimeConfig();

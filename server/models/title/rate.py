@@ -20,7 +20,7 @@ class TitleRate(Base):
     rating: Mapped[int] = mapped_column(Integer)
 
     def __post_init__(self):
-        if self.rate:
-            self.rate = max(min(5, self.rate), 1)
+        if self.rating:
+            self.rating = max(min(5, self.rating), 1)
         else:
-            self.rate = 1
+            self.rating = 1

@@ -34,10 +34,8 @@ def create_access_token(data: dict):
 
 
 async def get_user(token: str = Depends(oauth2_scheme)) -> User:
-    print(f"received data {token}")
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        print(f"decoded payload {payload}")
         username: str = payload.get("sub")  # type:ignore
         if username is None:
             raise credentials_exception

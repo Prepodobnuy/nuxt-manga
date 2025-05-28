@@ -17,10 +17,8 @@ class TranslateTeam(Base):
 
     owner_uuid: Mapped[str] = mapped_column(ForeignKey("user.uuid"))
     title: Mapped[str] = mapped_column(unique=True)
+    pfp: Mapped[bytes | None]
     description: Mapped[str | None] = mapped_column(default=None)
-    fhd: Mapped[str | None] = mapped_column(default=None)
-    hd: Mapped[str | None] = mapped_column(default=None)
-    sd: Mapped[str | None] = mapped_column(default=None)
 
     approved: Mapped[bool] = mapped_column(default=False, init=False)
     approved_at: Mapped[datetime | None] = mapped_column(default=None, init=False)
