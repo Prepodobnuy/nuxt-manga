@@ -51,7 +51,7 @@ const { titles, users, persons } = storeToRefs(useSearchStore());
         v-if="store.selected === 2"
         v-for="person in persons"
         :person="person.meta"
-        @click="navigateTo(`/peson/${person.id}`)"
+        @click="navigateTo(`/person/${person.id}`)"
       />
     </div>
   </SidemenuDefault>

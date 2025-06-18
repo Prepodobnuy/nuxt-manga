@@ -6,44 +6,6 @@ console.log(user);
 
 <template>
   <div>
-    <UiDropdown
-      v-if="user?.moder || user?.admin || user?.translator"
-      align="right"
-    >
-      <template #head>
-        <UiButton
-          color="primary"
-          leading="heroicons:squares-2x2-16-solid"
-          variant="ghost"
-          icon
-        />
-      </template>
-      <UiButton
-        v-if="user.moder || user.admin"
-        label="Панель модерации"
-        variant="ghost"
-        roundness="none"
-        start
-        @click="navigateTo('/panel/moderator')"
-      />
-      <UiButton
-        v-if="user.admin"
-        label="Панель администрации"
-        variant="ghost"
-        roundness="none"
-        start
-        @click="navigateTo('/panel/admin')"
-      />
-      <UiButton
-        v-if="user.translator || user.admin"
-        label="Панель переводчика"
-        variant="ghost"
-        roundness="none"
-        start
-        @click="navigateTo('/panel/translator')"
-      />
-    </UiDropdown>
-
     <UiDropdown align="right" v-if="logged && !user?.muted">
       <template #head>
         <UiButton
@@ -77,6 +39,14 @@ console.log(user);
         leading="heroicons:language-16-solid"
         start
         @click="navigateTo('/translate/create')"
+      />
+      <UiButton
+        v-if="user?.moder || user?.admin"
+        label="Панель модерации"
+        variant="ghost"
+        roundness="none"
+        start
+        @click="navigateTo('/panel/moderator')"
       />
     </UiDropdown>
 

@@ -4,6 +4,10 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ["@/assets/base.scss"],
 
+  app: {
+    pageTransition: { name: "page", mode: "out-in" },
+  },
+
   modules: [
     "@nuxt/eslint",
     "@nuxt/fonts",
@@ -16,12 +20,6 @@ export default defineNuxtConfig({
     "@vueuse/nuxt",
     "@pinia/nuxt",
   ],
-
-  nitro: {
-    prerender: {
-      routes: ["/api/tags", "/api/genres"],
-    },
-  },
 
   runtimeConfig: {
     public: {

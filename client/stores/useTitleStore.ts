@@ -238,6 +238,22 @@ export const useTitleStore = (id: number) => {
       );
     };
 
+    const putTitleCover = async (i: number, file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(
+        `${config.public.apiBase}/api/title/${id}/cover/${i}`,
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${token.value}`,
+          },
+        },
+      );
+    };
+
     const fetchPages = async () => {
       const { data } = await useFetch<Page[]>(`/api/page/title/${id}/pages`, {
         method: "GET",
@@ -339,11 +355,16 @@ export const useTitleStore = (id: number) => {
       postPage,
       putPage,
       putPageAsset,
+      putTitleCover,
       deletePage,
       sorted_pages,
       postRate,
-      fetchPages,
       view,
+      fetchMeta,
+      fetchPersons,
+      fetchRates,
+      fetchCovers,
+      fetchPages,
     };
   });
 

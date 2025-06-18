@@ -1,12 +1,11 @@
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends
-from sqlalchemy import asc, desc, func, literal_column, select
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import Float, asc, desc, func, literal_column, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.session_fabric import get_session
 from models.title.meta import TitleMeta
 from models.title.rate import TitleRate
-from models.title.view import TitleView
 from schemas.catalog import SearchPostScheme, SearchResultScheme
 from schemas.title import TitleMetaScheme
 
@@ -22,119 +21,75 @@ async def search_title(
     page = max(0, scheme.index)
     limit = 50
 
-    views_count_subq = (
-        select(TitleView.title_id, func.count(TitleView.id).label("views_count"))
-        .group_by(TitleView.title_id)
-        .subquery()
-    )
-    avg_rating_subq = (
+    avg_rating_subquery = (
         select(
-            TitleRate.title_id,
-            func.coalesce(func.avg(TitleRate.rating), 0).label(
-                "avg_rating"
-            ),  # Coalesce добавлен здесь
+            TitleRate.title_id, func.coalesce(func.avg(TitleRate.rating), None).label("avg_rating")
         )
         .group_by(TitleRate.title_id)
         .subquery()
     )
-    query = (
-        select(
-            TitleMeta,
-            func.coalesce(views_count_subq.c.views_count, 0).label("views_count"),
-            avg_rating_subq.c.avg_rating,
-        )
-        .join(avg_rating_subq, TitleMeta.id == avg_rating_subq.c.title_id, isouter=True)
-        .join(views_count_subq, TitleMeta.id == views_count_subq.c.title_id, isouter=True)
+    query = select(TitleMeta, avg_rating_subquery.c.avg_rating).join(
+        avg_rating_subquery, TitleMeta.title_id == avg_rating_subquery.c.title_id, isouter=True
     )
 
-    if scheme.rate_min is not None:
-        query = query.where(avg_rating_subq.c.avg_rating >= scheme.rate_min)
+    if scheme.rate_min:
+        query = query.where(avg_rating_subquery.c.avg_rating >= scheme.rate_min)
 
-    if scheme.rate_max is not None:
-        query = query.where(avg_rating_subq.c.avg_rating <= scheme.rate_max)
+    if scheme.rate_max:
+        query = query.where(avg_rating_subquery.c.avg_rating <= scheme.rate_max)
 
     if scheme.prompt:
         query = query.where(
-            TitleMeta.title_ru.ilike(f"%{scheme.prompt}%")
-            or TitleMeta.title_en.ilike(f"%{scheme.prompt}%")
-            or TitleMeta.title_jp.ilike(f"%{scheme.prompt}%")
-            or TitleMeta.title_an.ilike(f"%{scheme.prompt}%")
+            or_(
+                TitleMeta.title_ru.ilike(f"%{scheme.prompt}%"),
+                TitleMeta.title_en.ilike(f"%{scheme.prompt}%"),
+                TitleMeta.title_jp.ilike(f"%{scheme.prompt}%"),
+                TitleMeta.title_an.ilike(f"%{scheme.prompt}%"),
+            )
         )
 
-    if scheme.release_year_min is not None:
-        query = query.where(TitleMeta.release_year >= scheme.release_year_min)
-
-    if scheme.release_year_max is not None:
-        query = query.where(TitleMeta.release_year <= scheme.release_year_max)
-
+    print(scheme.include_tags)
     if scheme.include_tags:
         for tag in scheme.include_tags:
-            query = query.where(
-                func.array_to_string(func.string_to_array(TitleMeta.tags, "/"), ",").contains(
-                    str(tag)
-                )
-            )
+            query = query.where(TitleMeta.tags.contains(f"{tag}"))
 
     if scheme.exclude_tags:
         for tag in scheme.exclude_tags:
-            query = query.where(
-                ~func.array_to_string(func.string_to_array(TitleMeta.tags, "/"), ",").contains(
-                    str(tag)
-                )
-            )
+            query = query.where(~TitleMeta.tags.contains(f"{tag}"))
 
     if scheme.include_genres:
         for genre in scheme.include_genres:
-            query = query.where(
-                func.array_to_string(func.string_to_array(TitleMeta.genres, "/"), ",").contains(
-                    str(genre)
-                )
-            )
+            query = query.where(TitleMeta.genres.contains(f"{genre}"))
 
     if scheme.exclude_genres:
         for genre in scheme.exclude_genres:
-            query = query.where(
-                ~func.array_to_string(func.string_to_array(TitleMeta.genres, "/"), ",").contains(
-                    str(genre)
-                )
-            )
-
-    column = TitleMeta.release_year
-    if scheme.sort_by_views:
-        column = literal_column("views_count")
-    elif scheme.sort_by_rating:
-        column = literal_column("avg_rating")
+            query = query.where(~TitleMeta.genres.contains(f"{genre}"))
 
     if scheme.descending_order:
-        query = query.order_by(desc(column))
+        query = query.order_by(
+            desc(avg_rating_subquery.c.avg_rating).nulls_last(),
+        )
     else:
-        query = query.order_by(asc(column))
+        query = query.order_by(
+            asc(avg_rating_subquery.c.avg_rating).nulls_last(),
+        )
 
-    count = query
+    count_query = select(func.count()).select_from(query.alias())
     query = query.offset((page) * limit).limit(limit)
 
     async with session:
         exec = (await session.execute(query)).scalars().all()
-        length = len((await session.execute(count)).scalars().all())
-        total_pages = (length + limit - 1) // limit
+
+        total_count = await session.scalar(count_query) or 0
+        total_pages = (total_count + limit - 1) // limit
 
         metas: list[TitleMetaScheme] = []
 
         for title in exec:
-            tags = []
-            genres = []
-
-            for t in title.tags.split("/") if title.tags is not None else []:
-                try:
-                    tags.append(int(t))
-                except Exception:
-                    continue
-
-            for g in title.genres.split("/") if title.genres is not None else []:
-                try:
-                    genres.append(int(g))
-                except Exception:
-                    continue
+            tags = [int(t) for t in title.tags.split("/") if t.isdigit()] if title.tags else []
+            genres = (
+                [int(g) for g in title.genres.split("/") if g.isdigit()] if title.genres else []
+            )
 
             meta = TitleMetaScheme(
                 id=title.id,

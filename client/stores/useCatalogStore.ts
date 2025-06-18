@@ -9,7 +9,6 @@ export const useCatalogStore = defineStore("catalog", () => {
       leading: "heroicons:calendar-date-range-16-solid",
       label: "По дате релиза",
     },
-    { leading: "heroicons:eye-16-solid", label: "По просмотрам" },
     { leading: "heroicons:star-16-solid", label: "По рейтингу" },
   ];
 
@@ -29,7 +28,7 @@ export const useCatalogStore = defineStore("catalog", () => {
     rate_min: number | undefined;
     rate_max: number | undefined;
   }>({
-    selected_filter_index: 0,
+    selected_filter_index: 1,
     descending: true,
     prompt: "",
     tags: markRaw([]) as { value: Tag; state: number }[],
@@ -75,8 +74,8 @@ export const useCatalogStore = defineStore("catalog", () => {
           rate_min: rate_min,
           rate_max: rate_max,
           descending_order: form.descending,
-          sort_by_views: form.selected_filter_index === 1,
-          sort_by_rating: form.selected_filter_index === 2,
+          sort_by_views: false,
+          sort_by_rating: form.selected_filter_index === 1,
           index: index.value,
         };
 
@@ -138,6 +137,8 @@ export const useCatalogStore = defineStore("catalog", () => {
     form.release_year_max = undefined;
     form.rate_min = undefined;
     form.rate_max = undefined;
+    updateTags();
+    updateGenres();
   };
 
   const { tagsRef, genresRef } = useTags();

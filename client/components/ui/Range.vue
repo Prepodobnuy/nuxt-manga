@@ -4,6 +4,7 @@ import { UiNumberInput } from "#components";
 const {
   min,
   max,
+  fw = false,
   size = "md",
   roundness = "standart",
   color = "neutral",
@@ -11,6 +12,7 @@ const {
 } = defineProps<{
   min?: number;
   max?: number;
+  fw?: boolean;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   roundness?: "standart" | "pill" | "none";
   color?: "neutral" | "primary" | "success" | "warning" | "error";
@@ -72,5 +74,6 @@ const maxChange = () => {
   justify-content: space-between;
   align-items: center;
   gap: var(--gap);
+  width: 100%;
 }
 </style>

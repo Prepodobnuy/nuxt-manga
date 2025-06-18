@@ -112,7 +112,7 @@ const asset = computed(() => {
   justify-content: start;
 
   .content {
-    max-width: 1000px;
+    max-width: 800px;
     width: 100%;
   }
 }
@@ -120,6 +120,10 @@ const asset = computed(() => {
 .reader {
   position: relative;
   max-width: 1100px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  user-select: none;
 
   .image {
     position: relative;

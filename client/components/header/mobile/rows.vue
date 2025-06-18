@@ -40,6 +40,7 @@ const handleProfileClick = () => {
     @click="navigateTo('/')"
   />-->
   <UiButton
+    v-if="logged"
     color="primary"
     leading="heroicons:user-16-solid"
     variant="ghost"

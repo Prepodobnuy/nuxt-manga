@@ -34,7 +34,6 @@ export function useTouchGestures(callbacks: GestureCallbacks) {
       }
     }, LONG_PRESS_DURATION);
 
-    // Очистка таймера при перемещении или отпускании
     const cleanup = () => {
       clearTimeout(timer);
       window.removeEventListener("touchend", cleanup);
@@ -46,7 +45,7 @@ export function useTouchGestures(callbacks: GestureCallbacks) {
   };
 
   const handleTouchMove = (index: number, event: TouchEvent) => {
-    event.preventDefault(); // Предотвращаем скролл страницы
+    event.preventDefault();
   };
 
   const handleTouchEnd = (index: number) => {
@@ -64,14 +63,12 @@ export function useTouchGestures(callbacks: GestureCallbacks) {
       const absDeltaY = Math.abs(deltaY);
 
       if (absDeltaX > absDeltaY) {
-        // Горизонтальный свайп
         if (deltaX > 0) {
           callbacks.onSwipeRight(index);
         } else {
           callbacks.onSwipeLeft(index);
         }
       } else {
-        // Вертикальный свайп
         if (deltaY > 0) {
           callbacks.onSwipeDown(index);
         } else {

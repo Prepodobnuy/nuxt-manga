@@ -15,6 +15,16 @@ watch(breakpoint, () => {
         ? 3
         : 4;
 });
+
+onMounted(() => {
+  cols.value = isLessThan("mobile")
+    ? 1
+    : isLessThan("tabletxs")
+      ? 2
+      : isLessThan("tablet")
+        ? 3
+        : 4;
+});
 </script>
 
 <template>
@@ -43,38 +53,24 @@ watch(breakpoint, () => {
               />
             </template>
             <UiButton
-              v-for="(f, i) in filters"
-              class="noshrink"
-              variant="ghost"
-              roundness="none"
-              start
-              :leading="f.leading"
-              :label="f.label"
-              :toggle="i == form.selected_filter_index"
-              @click="form.selected_filter_index = i"
-            />
-
-            <div style="height: 4px" />
-
-            <UiButton
-              :toggle="form.descending"
+              :toggle="!form.descending"
               class="noshrink"
               variant="ghost"
               leading="heroicons:bars-arrow-up-16-solid"
               label="По возрастанию"
               roundness="none"
               start
-              @click="form.descending = true"
+              @click="form.descending = false"
             />
             <UiButton
-              :toggle="!form.descending"
+              :toggle="form.descending"
               class="noshrink"
               variant="ghost"
               leading="heroicons:bars-arrow-down-16-solid"
               label="По убыванию"
               roundness="none"
               start
-              @click="form.descending = false"
+              @click="form.descending = true"
             />
           </UiDropdown>
           <UiButton

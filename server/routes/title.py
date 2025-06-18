@@ -1,6 +1,7 @@
 import json
 from typing import Literal
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from models.assets.title import TitleCover
 from pydantic import BaseModel, ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -249,6 +250,105 @@ async def post_title(
     except Exception as e:
         print(e)
         raise HTTPException(500)
+
+
+@router.post("/{id}/update")
+async def post_update_title(
+    id: int,
+    request: Request,
+    user: User = Depends(get_moder),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        form_data = await request.form()
+        scheme_data = form_data.get("scheme")
+
+        if scheme_data is None:
+            raise HTTPException(status_code=400, detail="Missing scheme data")
+        scheme_data = scheme_data
+
+        try:
+            scheme_json = json.loads(scheme_data)
+            title_data = TitleMetaPostScheme(**scheme_json)
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="Invalid JSON in scheme")
+        except ValidationError as e:
+            raise HTTPException(status_code=422, detail=e.errors())
+
+        query = select(Title).where(Title.id == id)
+        meta_query = select(TitleMeta).where(TitleMeta.title_id == id)
+
+        async with session:
+            try:
+                title = (await session.execute(query)).scalar_one_or_none()
+                if title is None:
+                    raise HTTPException(404)
+
+                meta = (await session.execute(meta_query)).scalar_one_or_none()
+                if meta is None:
+                    meta = TitleMetaService.create_from_scheme(
+                        title=title, user=user, scheme=title_data
+                    )
+
+                meta.approved = True
+                meta.title_ru = title_data.title_ru
+                meta.title_en = title_data.title_en
+                meta.title_jp = title_data.title_jp
+                meta.title_an = title_data.title_an
+                meta.description = title_data.description
+                meta.tags = "/".join([str(t) for t in title_data.tags])
+                meta.genres = "/".join([str(g) for g in title_data.genres])
+
+                session.add(meta)
+
+                await session.commit()
+
+            except Exception as e:
+                print(e)
+                await session.rollback()
+                raise HTTPException(500)
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(500)
+
+
+@router.post("/{id}/cover/{cover_id}")
+async def post_title_cover(
+    id: int,
+    cover_id: int,
+    file: UploadFile = File(...),
+    user: User = Depends(get_moder),
+    session: AsyncSession = Depends(get_session),
+):
+    if file.content_type is None:
+        raise HTTPException(415, "no file supplied")
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(415, "file is not an image")
+
+    query = select(TitleCover).where(TitleCover.title_id == id, TitleCover.order == cover_id)
+
+    async with session:
+        try:
+            content = await file.read()
+            cover = (await session.execute(query)).scalar_one_or_none()
+            if cover is None:
+                cover = TitleCover(
+                    title_id=id,
+                    order=cover_id,
+                    data=content,
+                )
+                cover.approved = True
+                session.add(cover)
+            else:
+                cover.data = content
+
+            await session.commit()
+
+        except Exception as e:
+            print("\n\n\n", e, "\n\n\n")
+            await session.rollback()
+            raise HTTPException(500)
 
 
 class ratePostScheme(BaseModel):

@@ -2,6 +2,7 @@
 const {
   min,
   max,
+  fw = false,
   size = "md",
   roundness = "standart",
   color = "neutral",
@@ -9,6 +10,7 @@ const {
 } = defineProps<{
   min?: number;
   max?: number;
+  fw?: boolean;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   roundness?: "standart" | "pill" | "none";
   color?: "neutral" | "primary" | "success" | "warning" | "error";
@@ -73,22 +75,13 @@ const getSelectors = () => {
     `color-${color}`,
     `variant-${variant}`,
     `roundness-${roundness}`,
+    fw ? "fw" : undefined,
   ];
 };
 </script>
 
 <template>
   <div class="wrapper" :class="getSelectors()">
-    <UiButton
-      class="button"
-      icon
-      leading="heroicons:minus-16-solid"
-      :size="size"
-      :color="color"
-      :variant="variant"
-      roundness="none"
-      @click="decrement"
-    />
     <UiInput
       v-model="model"
       @input="checkModel"
@@ -98,16 +91,31 @@ const getSelectors = () => {
       :variant="variant"
       roundness="none"
     />
-    <UiButton
-      class="button"
-      icon
-      leading="heroicons:plus-16-solid"
-      :size="size"
-      :color="color"
-      :variant="variant"
-      roundness="none"
-      @click="increment"
-    />
+
+    <div class="buttons">
+      <UiButton
+        style="height: 100%"
+        class="button"
+        icon
+        leading="heroicons:plus-16-solid"
+        size="xs"
+        :color="color"
+        :variant="variant"
+        roundness="none"
+        @click="increment"
+      />
+      <UiButton
+        style="height: 100%"
+        class="button"
+        icon
+        leading="heroicons:minus-16-solid"
+        size="xs"
+        :color="color"
+        :variant="variant"
+        roundness="none"
+        @click="decrement"
+      />
+    </div>
   </div>
 </template>
 
@@ -124,12 +132,32 @@ const getSelectors = () => {
   display: inline-flex;
   overflow: hidden;
 
+  .buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    height: 100%;
+  }
   .button {
-    flex-shrink: 0;
+    flex-shrink: 1;
+    z-index: 10;
   }
   .input {
     max-width: 70px;
+    min-width: 30px;
     flex-shrink: 1;
+    z-index: 11;
+  }
+
+  &.fw {
+    width: 100%;
+    .input {
+      max-width: 100%;
+      width: 100%;
+      min-width: 30px;
+      flex-shrink: 1;
+      z-index: 11;
+    }
   }
 }
 </style>

@@ -5,6 +5,7 @@ import {
   UiDropdown,
   UiImageCarousel,
 } from "#components";
+import { Transition } from "vue";
 import { useTitleStore } from "~/stores/useTitleStore";
 import type { Tag } from "~/types/tag";
 
@@ -189,159 +190,159 @@ watch(selected_section, (newValue) => {
           variant="solid"
         />
 
-        <section v-if="selected_section === 0">
-          <div v-if="store.form.tags || store.form.genres" class="tags">
-            <UiButton
-              v-if="store.form.tags"
-              v-for="t in store.form.tags"
-              leading="heroicons:tag-16-solid"
-              :label="getTag(t)?.ru"
-              :fw="false"
-            />
-            <UiButton
-              v-if="store.form.genres"
-              v-for="t in store.form.genres"
-              :label="getGenre(t)?.ru"
-              :fw="false"
-            />
-          </div>
+        <Transition name="page">
+          <section v-if="selected_section === 0">
+            <div v-if="store.form.tags || store.form.genres" class="tags">
+              <UiButton
+                v-if="store.form.tags"
+                v-for="t in store.form.tags"
+                leading="heroicons:tag-16-solid"
+                :label="getTag(t)?.ru"
+                :fw="false"
+              />
+              <UiButton
+                v-if="store.form.genres"
+                v-for="t in store.form.genres"
+                :label="getGenre(t)?.ru"
+                :fw="false"
+              />
+            </div>
 
-          <div v-if="store.form.description" class="description">
-            <h5>Описание</h5>
-            <p>{{ store.form.description }}</p>
-          </div>
+            <div v-if="store.form.description" class="description">
+              <h5>Описание</h5>
+              <p>{{ store.form.description }}</p>
+            </div>
 
-          <div class="rates-body">
-            <div class="header">
-              <h5>Средняя оценка: {{ average_rating }}</h5>
-              <UiDropdown v-if="logged" align="right">
-                <template #head>
+            <div class="rates-body">
+              <div class="header">
+                <h5>Средняя оценка: {{ average_rating }}</h5>
+                <UiDropdown v-if="logged" align="right">
+                  <template #head>
+                    <UiButton
+                      leading="heroicons:star-16-solid"
+                      label="Оценить"
+                      color="primary"
+                      variant="ghost"
+                      :fw="false"
+                    />
+                  </template>
                   <UiButton
+                    v-for="i in [5, 4, 3, 2, 1]"
+                    :key="i"
+                    :toggle="store.form.user_rate === i"
+                    :label="`${i}`"
                     leading="heroicons:star-16-solid"
-                    label="Оценить"
                     color="primary"
                     variant="ghost"
-                    :fw="false"
+                    start
+                    roundness="none"
+                    @click="rate(i)"
                   />
-                </template>
-                <UiButton
-                  :toggle="store.form.user_rate === 5"
-                  leading="heroicons:star-16-solid"
-                  label="5"
-                  color="primary"
-                  variant="ghost"
-                  start
-                  @click="rate(5)"
-                />
-                <UiButton
-                  :toggle="store.form.user_rate === 4"
-                  leading="heroicons:star-16-solid"
-                  label="4"
-                  color="primary"
-                  variant="ghost"
-                  start
-                  @click="rate(4)"
-                />
-                <UiButton
-                  :toggle="store.form.user_rate === 3"
-                  leading="heroicons:star-16-solid"
-                  label="3"
-                  color="primary"
-                  variant="ghost"
-                  start
-                  @click="rate(3)"
-                />
-                <UiButton
-                  :toggle="store.form.user_rate === 2"
-                  leading="heroicons:star-16-solid"
-                  label="2"
-                  color="primary"
-                  variant="ghost"
-                  start
-                  @click="rate(2)"
-                />
-                <UiButton
-                  :toggle="store.form.user_rate === 1"
-                  leading="heroicons:star-16-solid"
-                  label="1"
-                  color="primary"
-                  variant="ghost"
-                  start
-                  @click="rate(1)"
-                />
-              </UiDropdown>
-            </div>
+                </UiDropdown>
+              </div>
 
-            <div class="rows">
-              <div class="row rate-5">
-                <div class="mark">
-                  <Icon name="heroicons:star-16-solid" /> 5
-                </div>
-                <div class="line-wrapper">
-                  <div class="line" :style="`width: ${rate_percent.rate5}%`" />
-                </div>
-                <div class="percent">{{ rate_percent.rate5 }}%</div>
-                <div class="rates">{{ store.form.rates_5 ?? 0 }}</div>
-              </div>
-              <div class="row rate-4">
-                <div class="mark">
-                  <Icon name="heroicons:star-16-solid" /> 4
-                </div>
-                <div class="line-wrapper">
-                  <div class="line" :style="`width: ${rate_percent.rate4}%`" />
-                </div>
-                <div class="percent">{{ rate_percent.rate4 }}%</div>
-                <div class="rates">{{ store.form.rates_4 ?? 0 }}</div>
-              </div>
-              <div class="row rate-3">
-                <div class="mark">
-                  <Icon name="heroicons:star-16-solid" /> 3
-                </div>
-                <div class="line-wrapper">
-                  <div class="line" :style="`width: ${rate_percent.rate3}%`" />
-                </div>
-                <div class="percent">{{ rate_percent.rate3 }}%</div>
-                <div class="rates">{{ store.form.rates_3 ?? 0 }}</div>
-              </div>
-              <div class="row rate-2">
-                <div class="mark">
-                  <Icon name="heroicons:star-16-solid" /> 2
-                </div>
-                <div class="line-wrapper">
-                  <div class="line" :style="`width: ${rate_percent.rate2}%`" />
-                </div>
-                <div class="percent">{{ rate_percent.rate2 }}%</div>
-                <div class="rates">{{ store.form.rates_2 ?? 0 }}</div>
-              </div>
-              <div class="row rate-1">
-                <div class="mark">
-                  <Icon name="heroicons:star-16-solid" /> 1
-                </div>
-                <div class="line-wrapper">
-                  <div class="line" :style="`width: ${rate_percent.rate1}%`" />
-                </div>
-                <div class="percent">{{ rate_percent.rate1 }}%</div>
-                <div class="rates">{{ store.form.rates_1 ?? 0 }}</div>
-              </div>
-            </div>
-          </div>
-        </section>
+              <div class="rows">
+                <Transition name="ratechange" mode="out-in">
+                  <div class="row rate-5">
+                    <div class="mark">
+                      <Icon name="heroicons:star-16-solid" /> 5
+                    </div>
+                    <div class="line-wrapper">
+                      <div
+                        class="line"
+                        :style="`width: ${rate_percent.rate5}%`"
+                      />
+                    </div>
+                    <div class="percent">{{ rate_percent.rate5 }}%</div>
+                    <div class="rates">{{ store.form.rates_5 ?? 0 }}</div>
+                  </div>
+                </Transition>
 
-        <section v-if="selected_section === 1">
-          <div
-            class="page"
-            v-for="(page, index) in sorted_pages"
-            :key="page.id"
-            @click="read_from(index)"
-          >
-            <div class="meta">
-              <div class="volume">Том {{ page.volume }}</div>
-              <div class="chapter">Глава {{ page.chapter }}</div>
-              <div class="order">Страница {{ page.order }}</div>
+                <Transition name="ratechange" mode="out-in">
+                  <div class="row rate-4">
+                    <div class="mark">
+                      <Icon name="heroicons:star-16-solid" /> 4
+                    </div>
+                    <div class="line-wrapper">
+                      <div
+                        class="line"
+                        :style="`width: ${rate_percent.rate4}%`"
+                      />
+                    </div>
+                    <div class="percent">{{ rate_percent.rate4 }}%</div>
+                    <div class="rates">{{ store.form.rates_4 ?? 0 }}</div>
+                  </div>
+                </Transition>
+
+                <Transition name="ratechange" mode="out-in">
+                  <div class="row rate-3">
+                    <div class="mark">
+                      <Icon name="heroicons:star-16-solid" /> 3
+                    </div>
+                    <div class="line-wrapper">
+                      <div
+                        class="line"
+                        :style="`width: ${rate_percent.rate3}%`"
+                      />
+                    </div>
+                    <div class="percent">{{ rate_percent.rate3 }}%</div>
+                    <div class="rates">{{ store.form.rates_3 ?? 0 }}</div>
+                  </div>
+                </Transition>
+
+                <Transition name="ratechange" mode="out-in">
+                  <div class="row rate-2">
+                    <div class="mark">
+                      <Icon name="heroicons:star-16-solid" /> 2
+                    </div>
+                    <div class="line-wrapper">
+                      <div
+                        class="line"
+                        :style="`width: ${rate_percent.rate2}%`"
+                      />
+                    </div>
+                    <div class="percent">{{ rate_percent.rate2 }}%</div>
+                    <div class="rates">{{ store.form.rates_2 ?? 0 }}</div>
+                  </div>
+                </Transition>
+
+                <Transition name="ratechange" mode="out-in">
+                  <div class="row rate-1">
+                    <div class="mark">
+                      <Icon name="heroicons:star-16-solid" /> 1
+                    </div>
+                    <div class="line-wrapper">
+                      <div
+                        class="line"
+                        :style="`width: ${rate_percent.rate1}%`"
+                      />
+                    </div>
+                    <div class="percent">{{ rate_percent.rate1 }}%</div>
+                    <div class="rates">{{ store.form.rates_1 ?? 0 }}</div>
+                  </div>
+                </Transition>
+              </div>
             </div>
-            <UiButton label="читать" :fw="false" variant="outline" />
-          </div>
-        </section>
+          </section>
+        </Transition>
+
+        <Transition name="page">
+          <section v-if="selected_section === 1" class="pages">
+            <div
+              class="page"
+              v-for="(page, index) in sorted_pages"
+              :key="page.id"
+              @click="read_from(index)"
+            >
+              <div class="meta">
+                <div class="volume">Том {{ page.volume }}</div>
+                <div class="chapter">Глава {{ page.chapter }}</div>
+                <div class="order">Страница {{ page.order }}</div>
+              </div>
+              <UiButton label="читать" :fw="false" variant="outline" />
+            </div>
+          </section>
+        </Transition>
 
         <section v-if="selected_section === 2">2</section>
       </main>
@@ -480,6 +481,7 @@ watch(selected_section, (newValue) => {
               opacity: 0.9;
               background-color: var(--line-bg);
               border-radius: var(--br);
+              transition: width 0.46s ease;
             }
           }
 
@@ -610,18 +612,30 @@ watch(selected_section, (newValue) => {
   }
 }
 
-.page {
-  display: inline-flex;
-  gap: var(--gap);
-  padding: var(--pd);
-  border-radius: var(--br);
-  background-color: var(--neutral-bg);
-  justify-content: space-between;
-  align-items: center;
+.pages {
+  display: flex;
+  flex-direction: column;
+  gap: 0 !important;
 
-  .meta {
+  .page {
     display: inline-flex;
     gap: var(--gap);
+    padding: var(--pd);
+    background-color: var(--neutral-bg);
+    justify-content: space-between;
+    align-items: center;
+
+    &:last-child {
+      border-radius: 0 0 var(--br) var(--br);
+    }
+    &:first-child {
+      border-radius: var(--br) var(--br) 0 0;
+    }
+
+    .meta {
+      display: inline-flex;
+      gap: var(--gap);
+    }
   }
 }
 
@@ -629,5 +643,15 @@ watch(selected_section, (newValue) => {
   display: inline-flex;
   align-items: center;
   gap: var(--gap);
+}
+
+.ratechange-enter-active,
+.ratechange-leave-active {
+  transition: all 0.25s;
+}
+.ratechange-enter-from,
+.ratechange-leave-to {
+  opacity: 0;
+  filter: blur(1rem);
 }
 </style>

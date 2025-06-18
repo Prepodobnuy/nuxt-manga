@@ -7,8 +7,14 @@ const { form, includeTags, excludeTags, includeGenres, excludeGenres, clear } =
 
 const tagPrompt = ref("");
 const genrePrompt = ref("");
-const filteredTags = () => form.tags.filter((v) => v);
-const filteredGenres = () => form.genres.filter((v) => v);
+const filteredTags = () =>
+  form.tags.filter((v) =>
+    v.value.ru.toLowerCase().includes(tagPrompt.value.toLowerCase()),
+  );
+const filteredGenres = () =>
+  form.genres.filter((v) =>
+    v.value.ru.toLowerCase().includes(genrePrompt.value.toLowerCase()),
+  );
 
 const activeSection = ref(0);
 </script>
@@ -38,17 +44,17 @@ const activeSection = ref(0);
         </p>
       </UiEntryButton>
 
-      <p style="margin: var(--gap); font-size: 0.95em">Год Релиза</p>
-      <p style="margin: var(--gap); font-size: 0.85em">От</p>
-      <UiNumberInput v-model="form.release_year_min" />
-      <p style="margin: var(--gap); font-size: 0.85em">До</p>
-      <UiNumberInput v-model="form.release_year_max" />
+      <p style="margin: var(--gap); font-size: 1.1em">Год Релиза</p>
+      <p style="margin: var(--gap); font-size: 0.95em">От</p>
+      <UiNumberInput class="o" v-model="form.release_year_min" fw />
+      <p style="margin: var(--gap); font-size: 0.95em">До</p>
+      <UiNumberInput class="o" v-model="form.release_year_max" fw />
 
-      <p style="margin: var(--gap); font-size: 0.95em">Оценка</p>
-      <p style="margin: var(--gap); font-size: 0.85em">От</p>
-      <UiNumberInput v-model="form.rate_min" />
-      <p style="margin: var(--gap); font-size: 0.85em">До</p>
-      <UiNumberInput v-model="form.rate_max" />
+      <p style="margin: var(--gap); font-size: 1.1em">Оценка</p>
+      <p style="margin: var(--gap); font-size: 0.95em">От</p>
+      <UiNumberInput class="o" v-model="form.rate_min" fw />
+      <p style="margin: var(--gap); font-size: 0.95em">До</p>
+      <UiNumberInput class="o" v-model="form.rate_max" fw />
 
       <UiEntryButton label="Сбросить" @click="clear()" />
     </section>
@@ -115,3 +121,10 @@ const activeSection = ref(0);
     </secion>
   </SidemenuDefault>
 </template>
+
+<style lang="scss" scoped>
+.o {
+  margin: 0 var(--pd);
+  max-width: calc(100% - var(--pd) - var(--pd));
+}
+</style>

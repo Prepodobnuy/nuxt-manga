@@ -2,11 +2,11 @@
 import { UiButton, UiFallbackImg, UiTabs } from "#components";
 import { useUserStore } from "~/stores/useUserStore";
 
-const { user: userval, logged } = useAuth();
+const { user: userval, logged, logout } = useAuth();
 const config = useRuntimeConfig();
 const route = useRoute();
 const uuid = route.params.uuid as string;
-const { data: user } = useUserStore(uuid);
+const { data: user } = storeToRefs(useUserStore(uuid));
 
 const pfp = `${config.public.apiBase}/api/asset/user/${uuid}/pfp`;
 const back = `${config.public.apiBase}/api/asset/user/${uuid}/back`;
@@ -41,6 +41,16 @@ const calert = () => {
               leading="heroicons:adjustments-horizontal-16-solid"
               icon
               @click="navigateTo(`/user/${userval.uuid}/options`)"
+            />
+            <UiButton
+              v-if="userval?.uuid === uuid"
+              class="leave"
+              variant="outline"
+              color="error"
+              roundness="pill"
+              leading="heroicons:arrow-left-start-on-rectangle-16-solid"
+              icon
+              @click="logout"
             />
 
             <div class="inner">
@@ -127,7 +137,13 @@ header {
 
     .settings {
       position: absolute;
-      bottom: var(--pd);
+      bottom: -5px;
+      right: calc(var(--pd) + 36px + 5px);
+    }
+
+    .leave {
+      position: absolute;
+      bottom: -5px;
       right: var(--pd);
     }
 

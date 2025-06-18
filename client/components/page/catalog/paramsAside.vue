@@ -4,8 +4,14 @@ const { form, includeTags, excludeTags, includeGenres, excludeGenres, clear } =
 
 const tagPrompt = ref("");
 const genrePrompt = ref("");
-const filteredTags = () => form.tags.filter((v) => v);
-const filteredGenres = () => form.genres.filter((v) => v);
+const filteredTags = () =>
+  form.tags.filter((v) =>
+    v.value.ru.toLowerCase().includes(tagPrompt.value.toLowerCase()),
+  );
+const filteredGenres = () =>
+  form.genres.filter((v) =>
+    v.value.ru.toLowerCase().includes(genrePrompt.value.toLowerCase()),
+  );
 
 const activeSection = ref(0);
 </script>
@@ -39,30 +45,20 @@ const activeSection = ref(0);
           {{ form.genres.length }}
         </p>
       </UiButton>
-
-      <div style="height: 16px" />
-
-      <p style="margin: var(--gap); font-size: 0.95em">Год Релиза</p>
+      <p style="margin: var(--gap); font-size: 0.95em">Оценка</p>
       <UiRange
-        style="margin: 0 var(--gap)"
-        v-model:minm="form.release_year_min"
-        v-model:maxm="form.release_year_max"
-        :min="1900"
-        :max="2025"
+        style="
+          margin: 0 var(--gap);
+          max-width: calc(100% - var(--gap) - var(--gap));
+        "
+        v-model:minm="form.rate_min"
+        v-model:maxm="form.rate_max"
+        :min="1"
+        :max="5"
         size="sm"
       />
 
-      <p style="margin: var(--gap); font-size: 0.95em">Оценка</p>
-      <p>
-        <UiRange
-          style="margin: 0 var(--gap)"
-          v-model:minm="form.rate_min"
-          v-model:maxm="form.rate_max"
-          :min="1"
-          :max="5"
-          size="sm"
-        />
-      </p>
+      <div style="height: 16px" />
 
       <UiButton
         label="Очистить"
